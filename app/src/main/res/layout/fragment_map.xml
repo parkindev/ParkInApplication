@@ -1,0 +1,55 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    tools:context="com.example.thanyapat.parkinapplication.MapFragment">
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/seekBar"
+        android:progressDrawable="@drawable/styled_progress"
+        android:splitTrack="false"
+        android:foreground="#264d94"
+        android:thumbOffset="20dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/search_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:src="@drawable/action_search"
+        app:backgroundTint="#ffffff"
+        android:tint="#000000"
+        android:layout_margin="10dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/location_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/location_icon"
+        app:backgroundTint="#ffffff"
+        android:tint="#000000"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="80dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
+
+    <com.example.thanyapat.parkinapplication.SlidePanel
+        android:id="@+id/slide_panel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+</FrameLayout>
