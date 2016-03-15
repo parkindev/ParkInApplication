@@ -8,13 +8,16 @@ import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.Serializable;
 
 /**
  * Created by Tong on 9/11/2015. Edited by Thanyapat on 14/02/2016
  */
-public class ParkingArea implements Parcelable {
+public class ParkingArea implements Parcelable, Serializable {
     private String id;
     private String name;
     private double latitude;
@@ -22,7 +25,10 @@ public class ParkingArea implements Parcelable {
     private String address;
     private JSONObject price;
     private int capacity;
-
+    private JSONArray openTime;
+    private JSONArray closeTime;
+    private String picUrl;
+    private int freeTimeInMinute;
 
     public int describeContents(){
         return 0;
@@ -30,39 +36,38 @@ public class ParkingArea implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if(price!=null) {
-            dest.writeStringArray(new String[]{this.id,
-                    this.name,
-                    "" + this.latitude,
-                    "" + this.longitude,
-                    this.address,
-                    this.price.toString(),
-                    "" + this.capacity});
-        }else{
-            dest.writeStringArray(new String[]{this.id,
-                    this.name,
-                    "" + this.latitude,
-                    "" + this.longitude,
-                    this.address,
-                    "",
-                    "" + this.capacity});
-        }
+        dest.writeStringArray(
+                new String[]{this.id
+                        , this.name
+                        , "" + this.latitude
+                        , "" + this.longitude
+                        , this.address
+                        , this.price!=null ? this.price.toString() : ""
+                        , "" + this.capacity
+                        , this.openTime!=null ? this.openTime.toString() : ""
+                        , this.closeTime!=null ? this.closeTime.toString() : ""
+                        , this.picUrl
+                        , ""+freeTimeInMinute});
     }
-    public ParkingArea(Parcel in) {
-        String[] data = new String[7];
 
-        in.readStringArray(data);
-        this.id = data[0];
-        this.name = data[1];
-        this.latitude = Double.parseDouble(data[2]);
-        this.longitude = Double.parseDouble(data[3]);
-        this.address = data[4];
+    public ParkingArea(Parcel in) {
+        String[] data = new String[11];
         try {
+            in.readStringArray(data);
+            this.id = data[0];
+            this.name = data[1];
+            this.latitude = Double.parseDouble(data[2]);
+            this.longitude = Double.parseDouble(data[3]);
+            this.address = data[4];
             this.price = data[5].equals("") ? null : new JSONObject(data[5]);
+            this.capacity = Integer.parseInt(data[6]);
+            this.openTime =  data[7].equals("") ? null : new JSONArray(data[7]);
+            this.closeTime = data[8].equals("") ? null : new JSONArray(data[8]);
+            this.picUrl = data[9];
+            this.freeTimeInMinute = Integer.parseInt(data[10]);
         }catch(JSONException e ){
             Log.e("String_to_JSONObject", e.getMessage());
         }
-        this.capacity = Integer.parseInt(data[6]);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
@@ -75,14 +80,6 @@ public class ParkingArea implements Parcelable {
         }
     };
 
-    public ParkingArea(String name, String address , double latitude, double longitude){
-        this.name = name;
-        this.address = address;
-        this.latitude = latitude;
-        this.longitude = longitude;
-
-    }
-
     public ParkingArea(ParseObject object){
         this.id = object.getObjectId();
         this.name = object.getString("name");
@@ -94,31 +91,32 @@ public class ParkingArea implements Parcelable {
         this.address = object.getString("address")!= null ? object.getString("address"):null;
         //get capacity if not null
         this.capacity = object.getInt("capacity");
-
+        this.openTime = object.getJSONArray("openTime");
+        this.closeTime = object.getJSONArray("closeTime");
+        this.picUrl = object.getString("picURL");
+        this.freeTimeInMinute = object.getInt("freeTimeInMinute");
     }
 
-    public String getName(){
-        return name;
-    }
+    public String getId(){ return id;}
 
-    public JSONObject getPrice(){
-        return price;
-    }
+    public String getName(){ return name; }
 
-    public String getAddress(){
-        return address;
-    }
+    public JSONObject getPrice(){ return price; }
 
-    public int getCapacity(){
-        return capacity;
-    }
+    public String getAddress(){ return address; }
 
-    public double getLat(){
-        return latitude;
-    }
+    public int getCapacity(){ return capacity; }
 
-    public double getLong(){
-        return  longitude;
-    }
+    public double getLat(){ return latitude; }
+
+    public double getLong(){ return  longitude; }
+
+    public JSONArray getOpenTime(){ return openTime; }
+
+    public JSONArray getCloseTime(){ return closeTime; }
+
+    public String getPicURL(){ return picUrl; }
+
+    public int getFreeTimeInMinute(){ return freeTimeInMinute; }
 
 }

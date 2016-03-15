@@ -17,9 +17,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/**
- * Created by Tong on 1/20/2016.
- */
+import com.google.android.gms.maps.model.LatLng;
+
 public class SlidePanel extends LinearLayout {
     private ViewDragHelper mDragHelper;
     protected ViewGroup whitePanel;
@@ -89,9 +88,9 @@ public class SlidePanel extends LinearLayout {
             @Override
             public void onClick(View v) {
                 Log.w("SlidePanel","TimerBtn Clicked");
-                ((MainActivity) mapFrag.getActivity()).setParkingAreaInTimerFragment(area);
-                ((MainActivity) mapFrag.getActivity()).getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.frame_container, ((MainActivity) mapFrag.getActivity()).fragmentList.get("timer")).commit();
+                MainActivity.fragmentList.put("timer",TimerFragment.newInstance(new LatLng(area.getLat(),area.getLong())));
+                mapFrag.getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.frame_container, MainActivity.fragmentList.get("timer")).commit();
             }
         });
     }
@@ -132,14 +131,7 @@ public class SlidePanel extends LinearLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
 
-
-        if (isTarget(event) /*&& mDragHelper.shouldInterceptTouchEvent(event)*/) {
-            //Log.e("intercept", "intercept true");
-            return true;
-        } else {
-            //Log.e("intercept", "intercept false");
-            return false;
-        }
+        return isTarget(event);
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {

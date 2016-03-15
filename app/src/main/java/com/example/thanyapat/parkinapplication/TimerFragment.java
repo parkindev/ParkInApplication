@@ -18,19 +18,27 @@ import android.util.Log;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import com.example.thanyapat.parkinapplication.History.HistoryContent;
+import com.google.android.gms.maps.model.LatLng;
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 
 import org.json.JSONException;
 
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import com.example.thanyapat.parkinapplication.History.HistoryContent.HistoryItem;
+import com.parse.ParseUser;
 
 import me.grantland.widget.AutofitTextView;
 
 public class TimerFragment extends StatedFragment {
-   private static final String KEY_STRING = "PARKING_AREA";
+
+    private static final String USER_LOCATION = "user-location";
 
     private View rootView;
     private Button startBtn;
@@ -51,17 +59,17 @@ public class TimerFragment extends StatedFragment {
     private static String arrivalTime ="";
     private final static int COLOR_GREEN = Color.rgb(0,136,43);
     private final static int COLOR_RED = Color.rgb(255,0,0);
-    private int priceSum;
-
+    private int priceSum = 0;
+    private boolean isLocationChanged;
 
     public TimerFragment() {
         // Required empty public constructor
     }
 
-    public static TimerFragment newInstance(Parcelable area) {
+    public static TimerFragment newInstance(LatLng userPosition) {
         TimerFragment fragment = new TimerFragment();
         Bundle args = new Bundle();
-        args.putParcelable(KEY_STRING, area);
+        args.putParcelable(USER_LOCATION, userPosition);
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,7 +81,7 @@ public class TimerFragment extends StatedFragment {
 
         Bundle bundle = getArguments();
         if(bundle != null) {
-            area = bundle.getParcelable(KEY_STRING);
+            area = ApplicationUtils.getClosest((LatLng) bundle.getParcelable(USER_LOCATION));
         }
     }
 
@@ -96,7 +104,7 @@ public class TimerFragment extends StatedFragment {
 
     private void initiateAttributes(){
         handler = new TimeChangeHandler();
-
+        isLocationChanged = false;
         editBtn = (TextView) rootView.findViewById(R.id.edit_btn);
         editBtn.setOnClickListener(new OnClickListener(){
             @Override
@@ -157,36 +165,7 @@ public class TimerFragment extends StatedFragment {
         Log.w("TimerFragment", "Set arrival time to current time : " + arrivalTime);
     }
 
-    public void updateFee() {
-        // fetch the price and increment number in attribute [parkingFee]
-        priceSum = 0;
-        if (area.getPrice() != null) {
-                for (int j = 0; j < min; j++) {
-                    priceSum +=  getPrice(j);
-                }
-            Log.w("TimerFragment", "Set cumulative fee to " + priceSum + " Baht");
-            parkingTextView.setText(String.valueOf(priceSum));
-        }else{
-            Log.w("TimerFragment", "There's no pricing information for " + area.getName() + " parking area");
-        }
-        ((MainActivity)getActivity()).issueNotification("NAV_TO_TIMER", "Total fee : " + priceSum + " Baht"); // move into if when finish
-    }
-
-    private int getPrice(int index){
-        try {
-            return (int) area.getPrice().getJSONArray
-                    ((Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-                            || (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)
-                            ? "weekEndPrice" : "weekDayPrice")
-                    .getJSONArray(Integer.parseInt(arrivalTime.substring(0, arrivalTime.indexOf(":"))))
-                    .get(index);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-   public ParkingArea getArea(){
+    public ParkingArea getArea(){
         return area;
     }
 
@@ -207,8 +186,8 @@ public class TimerFragment extends StatedFragment {
     }
 
     class TimerButtonClickListener implements  View.OnClickListener {
-            @Override
-            public void onClick(View v) {
+        @Override
+        public void onClick(View v) {
                 if(isCounting){ // if Timer is counting --> stop it
                     switchUI();
                     isCounting = false;
@@ -223,9 +202,25 @@ public class TimerFragment extends StatedFragment {
                     switchUI();
                     isCounting = true;
                     location_label.setText("Duration");
+                    // TODO: update History when user press timer or when timer notify user?
+                    String username;
+                    ParseUser currentUser = ParseUser.getCurrentUser();
+                    if (currentUser != null) {
+                        username = currentUser.getUsername();
+                    } else {
+                        username = "null";
+                    }
+                    DatabaseManager.putHistory(area.getName(), (LatLng) getArguments().getParcelable(USER_LOCATION), isLocationChanged, username);
+                    HistoryContent.addItem(new HistoryItem(area.getName(), new LatLng(area.getLat(), area.getLong())));
+                    try {
+                        // Save the list of entries to internal storage
+                        InternalStorage.writeHistoryObject(TimerFragment.this.getContext());
+                    } catch (IOException e) {
+                        Log.e("TimerFragment", e.getMessage());
+                    }
                     timerStartStop(isCounting);
                 }
-            }
+        }
         public void timerStartStop(boolean isCounting){
             if(isCounting){
                 timer = new Timer();
@@ -306,7 +301,7 @@ public class TimerFragment extends StatedFragment {
                     .setItems(getPlacesArray(), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             // The 'which' argument contains the index position of the selected item
-                            // TODO: send new area to backend
+                            isLocationChanged = true;
                             setArea(areaList.get(which));
                             locationTextView.setText(area.getName());
                         }
@@ -342,7 +337,11 @@ public class TimerFragment extends StatedFragment {
                     min=0;
                     //updateFee();
                 }
-                updateFee();
+                if(area.getPrice()!=null){
+                    priceSum = ApplicationUtils.durationToPrice(area, min);
+                    parkingTextView.setText(String.valueOf(priceSum));
+                }
+                ((MainActivity)getActivity()).issueNotification("NAV_TO_TIMER", "Total fee : " + priceSum + " Baht");
                 sec=0;
             }
             Log.w("Timer","parking duration is "+hour+"H "+min+"M "+sec+"S");

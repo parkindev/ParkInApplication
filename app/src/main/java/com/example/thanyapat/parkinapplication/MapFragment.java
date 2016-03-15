@@ -37,6 +37,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 
 public class MapFragment extends StatedFragment {
@@ -59,8 +61,19 @@ public class MapFragment extends StatedFragment {
     protected static DatabaseManager dbManager;
     protected SlidePanel slidePanel;
 
+    private static final String INITIAL_LOCATION = "initial-location";
+
+
     public MapFragment() {
         // Required empty public constructor
+    }
+
+    public static MapFragment newInstance(LatLng latLng) {
+        MapFragment fragment = new MapFragment();
+        Bundle args = new Bundle();
+        args.putParcelable(INITIAL_LOCATION, latLng);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -197,6 +210,32 @@ public class MapFragment extends StatedFragment {
         super.onResume();
         mapView.onResume();
         Log.w("MapFragment", "onResume");
+        if(this.getArguments().getParcelable(INITIAL_LOCATION)!=null){
+            try {
+                LatLng latLng = getArguments().getParcelable(INITIAL_LOCATION);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                isLocated = true;
+                slidePanel.show(getParkingAreaByLatLng(latLng));
+                getArguments().clear();
+            }catch (NullPointerException e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    private ParkingArea getParkingAreaByLatLng(LatLng latlng){
+        Iterator it = hashMarker.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            LatLng tem = new LatLng(((ParkingArea) pair.getValue()).getLat(),((ParkingArea)pair.getValue()).getLong());
+            if(tem.equals(latlng)){
+                return (ParkingArea) pair.getValue();
+            }
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+        Log.e("MapFragment", "No area match "+latlng.toString());
+        return null;
     }
 
     @Override
@@ -231,7 +270,7 @@ public class MapFragment extends StatedFragment {
                 Marker temp;
                 if(object.getPrice()!=null){
                     temp = map.addMarker(new MarkerOptions().position(new LatLng(object.getLat(), object.getLong()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker, "" + seekbarmanager.durationToPrice(object.getPrice())))));
+                        .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker, "" + ApplicationUtils.durationToPrice(object, seekbarmanager.getValue())))));
                 } else {
                     temp = map.addMarker(new MarkerOptions().position(new LatLng(object.getLat(), object.getLong()))
                         .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker, ""))));

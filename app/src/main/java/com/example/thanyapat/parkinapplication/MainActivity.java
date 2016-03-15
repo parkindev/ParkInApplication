@@ -18,9 +18,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,8 +28,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 
+import com.example.thanyapat.parkinapplication.History.HistoryContent;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
@@ -55,7 +52,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,7 +65,7 @@ public class MainActivity extends AppCompatActivity
     private static GoogleApiClient googleApiClient;
     protected static List<ParkingArea> areaList = new LinkedList<>();
     private GraphResponse response;
-    private LatLng userPosition;
+    protected LatLng userPosition;
 
 
     @Override
@@ -84,7 +80,6 @@ public class MainActivity extends AppCompatActivity
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(new MyConnectionFailedListener())
                 .build();
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setVisibility(View.GONE);
@@ -107,7 +102,7 @@ public class MainActivity extends AppCompatActivity
         getUserDetailsFromFB();
     }
 
-    public void checkForAction(String action){
+    private void checkForAction(String action){
         if(action.toUpperCase().equalsIgnoreCase("NAV_TO_TIMER")){
             if (fragmentList.get("timer") != null) {
                 Log.w("MainActivity", "TimerFragment is in memory");
@@ -124,18 +119,17 @@ public class MainActivity extends AppCompatActivity
                     .commit();        }
     }
 
-    public void addFragmentToList(){
+    private void addFragmentToList(){
         fragmentList.put("map",new MapFragment());
         //fragmentList.put("timer",new TimerFragment());
         fragmentList.put("memo",new MemoFragment());
         fragmentList.put("home",new HomeFragment());
+        fragmentList.put("history",new HistoryFragment());
+        fragmentList.put("issue-report",new IssueReportFragment());
+        fragmentList.put("info-report",new InfoReportFragment());
+
     }
 
-    public void setParkingAreaInTimerFragment(ParkingArea area){
-       if(area!=null) Log.w("MainActivity","Putting "+area.getName()+" in TimerFragment");
-       fragmentList.put("timer",
-               TimerFragment.newInstance(area));
-    }
 
     public void putList(List<ParseObject> list){
         for(ParseObject object : list ){
@@ -156,6 +150,7 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
         }
     }
+
 
     public void issueNotification(String action, String message){
         Intent resultIntent = new Intent(this, MainActivity.class);
@@ -230,6 +225,7 @@ public class MainActivity extends AppCompatActivity
         return displayView(item.getItemId());
     }
 
+
     private boolean displayView(int id) {
         // update the main content by replacing fragments
         String fragmentName="";
@@ -239,7 +235,7 @@ public class MainActivity extends AppCompatActivity
             if(userPosition!=null){
                 if(fragmentList.get("timer")==null){
                     Log.w("MainActivity", "Assign new location for timer");
-                    setParkingAreaInTimerFragment(getClosest(userPosition));
+                    fragmentList.put("timer",TimerFragment.newInstance(userPosition));
                 } else if(((TimerFragment)fragmentList.get("timer")).getArea()!=null){
                     Log.w("MainActivity", "Open timer");
                 }
@@ -250,7 +246,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_memo) {
             fragmentName="memo";
         } else if (id == R.id.nav_history) {
-            fragmentName="home";
+            fragmentName="history";
         } else if (id == R.id.nav_report) {
             showReportDialog();
         } else if (id == R.id.nav_share) {
@@ -268,76 +264,39 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
+
     public void showReportDialog(){
-        // Set up the input
-        final EditText input = new EditText(this);
-        // Specify the type of input expected
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        String[] EDIT_CHOICE = {"Parking Area Info", "Technical Issue"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Report")
-                .setView(input)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                             @Override
-                                             public void onClick(DialogInterface dialog, int which) {
-                                                // TODO: save the message to database (user databaseManager)
-                                                // TODO: snackBar "thank you"
-                                            }
-                                        })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog.cancel();
-                                                }
-                                            })
-                .show();
+        builder.setTitle("What to report?")
+                .setItems(EDIT_CHOICE, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch(which){
+                            case 0:
+                                getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("info-report")).commit();
+                                break;
+                            case 1:
+                                getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("issue-report")).commit();
+                                break;
+                        }
+                        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                        drawer.closeDrawer(GravityCompat.START);
+                    }
+                });
+        builder.create().show();
     }
 
-    public ParkingArea getClosest(LatLng userPos){
-        ParkingArea closest=null;
-        for(ParkingArea p : areaList) {
-            if (closest == null) {
-                closest = p;
-            } else if(CalculationByDistance(new LatLng(p.getLat()      , p.getLong()     ), userPos)
-                    < CalculationByDistance(new LatLng(closest.getLat(),closest.getLong()),userPos)){
-                closest = p;
-            }
-        }
-        return closest;
-    }
 
     public void setUserPosition(LatLng userPos){
         userPosition = userPos;
-    }
-
-    public double CalculationByDistance(LatLng StartP, LatLng EndP) {
-        int Radius = 6371;// radius of earth in Km
-        double lat1 = StartP.latitude;
-        double lat2 = EndP.latitude;
-        double lon1 = StartP.longitude;
-        double lon2 = EndP.longitude;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-                * Math.sin(dLon / 2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        double valueResult = Radius * c;
-        double km = valueResult / 1;
-        DecimalFormat newFormat = new DecimalFormat("####");
-        int kmInDec = Integer.valueOf(newFormat.format(km));
-        double meter = valueResult % 1000;
-        int meterInDec = Integer.valueOf(newFormat.format(meter));
-        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
-                + " Meter   " + meterInDec);
-
-        return Radius * c;
     }
 
     @Override
     protected void onResume() {
         Log.e("Status", "App resumed");
         super.onResume();
+        HistoryContent.init(this);
         try{
             String action = getIntent().getAction();
             if(action != null){
@@ -398,7 +357,6 @@ public class MainActivity extends AppCompatActivity
             Log.e("Location Request", "FAILED");
         }
     }
-
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -501,4 +459,3 @@ public class MainActivity extends AppCompatActivity
         }
     }
 }
-

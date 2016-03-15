@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,11 +36,11 @@ public class MemoFragment extends StatedFragment {
 
     private static String lotNo="";
     ImageView imageView;
-    ImageButton cameraBtn;
     EditText editText;
     File imageFile;
     Uri uri;
     Bitmap bitmap;
+    FloatingActionButton cameraBtn;
     private View rootView;
     
     public MemoFragment() {
@@ -71,7 +72,7 @@ public class MemoFragment extends StatedFragment {
 
         imageView = (ImageView)rootView.findViewById(R.id.imageView);
         editText = (EditText)rootView.findViewById(R.id.editText);
-        cameraBtn = (ImageButton) rootView.findViewById(R.id.imageButton);
+        cameraBtn = (FloatingActionButton) rootView.findViewById(R.id.camera_fab);
         cameraBtn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

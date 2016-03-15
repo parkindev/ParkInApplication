@@ -83,24 +83,6 @@ public class SeekBarManager {
             changeThumb(""+seekBarValue, "Hour");
     }
 
-
-    public int durationToPrice(JSONObject p) {
-        int priceSum = 0;
-        try {
-            for(int j = 0; j < seekBarValue ; j++){
-                priceSum += (int)p.getJSONArray
-                        ((Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-                                || (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)
-                                ? "weekEndPrice" : "weekDayPrice" )
-                        .getJSONArray(Calendar.HOUR_OF_DAY)
-                        .get(j);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return priceSum;
-    }
-
     protected int getValue(){
         return seekBarValue;
     }
@@ -137,9 +119,7 @@ public class SeekBarManager {
         matrix.postScale(scaleWidth, scaleHeight);
 
         // recreate the new Bitmap
-        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
-
-        return resizedBitmap;
+        return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
 }
