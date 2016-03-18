@@ -69,6 +69,7 @@ public class MemoFragment extends StatedFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_memo, container, false);
+        MainActivity.navigationView.getMenu().getItem(2).setChecked(true);
 
         imageView = (ImageView)rootView.findViewById(R.id.imageView);
         editText = (EditText)rootView.findViewById(R.id.editText);
@@ -88,7 +89,7 @@ public class MemoFragment extends StatedFragment {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CAMERA && resultCode == getActivity().RESULT_OK) {
+        if (requestCode == REQUEST_CAMERA && resultCode == MainActivity.RESULT_OK) {
             getActivity().getContentResolver().notifyChange(uri, null);
             ContentResolver cr = getActivity().getContentResolver();
             //cameraTextView.setVisibility(View.GONE);

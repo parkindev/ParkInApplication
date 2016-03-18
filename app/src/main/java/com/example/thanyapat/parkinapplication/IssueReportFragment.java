@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.parse.ParseUser;
 
@@ -30,6 +31,7 @@ public class IssueReportFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView =  inflater.inflate(R.layout.fragment_issue_report, container, false);
+        MainActivity.navigationView.getMenu().getItem(4).setChecked(true);
 
         submitBtn = (Button) rootView.findViewById(R.id.submit_btn);
         submitBtn.setOnClickListener(new View.OnClickListener() {
@@ -48,12 +50,12 @@ public class IssueReportFragment extends Fragment {
                     DatabaseManager.putIssueReport(typeEdit.getText().toString(),problemEdit.getText().toString(),username);
                     typeEdit.setText("");
                     problemEdit.setText("");
-                    Snackbar.make(rootView.findViewById(R.id.view_issue_report)
+                    Snackbar.make(rootView
                             , "Thank You for your suggestion!"
                             , Snackbar.LENGTH_LONG)
                             .show();
                 }else{
-                    Snackbar.make(rootView.findViewById(R.id.view_info_report)
+                    Snackbar.make(rootView
                             , "Please fill both fields."
                             , Snackbar.LENGTH_LONG)
                             .show();

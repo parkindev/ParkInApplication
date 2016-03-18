@@ -1,8 +1,15 @@
 package com.example.thanyapat.parkinapplication;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +32,7 @@ public class FacebookLoginActivity extends AppCompatActivity {
     Runnable runnable;
     long delay_time;
     long time = 1500L;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,21 +44,31 @@ public class FacebookLoginActivity extends AppCompatActivity {
         runnable = new Runnable() {
             public void run() {
                 Log.e("Status", "Stop Splashing");
-                if (ParseUser.getCurrentUser() != null) {
-                    // Start an intent for the logged in activity
-                    Log.e("FacebookLogin", "already has user session");
-
-                    startActivity(new Intent(FacebookLoginActivity.this, MainActivity.class));
-                    finish();
-                }else{
-                    Log.e("FacebookLogin", "initiate login UI");
-
-                    getSupportFragmentManager().beginTransaction().remove(splashScreen).commit();
-                    initLoginButton();
+                if (isOnline()) {
+                    if (ParseUser.getCurrentUser() != null) {
+                        // Start an intent for the logged in activity
+                        Log.e("FacebookLogin", "already has user session");
+                        startActivity(new Intent(FacebookLoginActivity.this, MainActivity.class));
+                        finish();
+                    } else {
+                        Log.e("FacebookLogin", "initiate login UI");
+                        getSupportFragmentManager().beginTransaction().remove(splashScreen).commit();
+                        initLoginButton();
+                    }
+                } else {
+                    Snackbar.make(FacebookLoginActivity.this.findViewById(R.id.view_facebook_login), "No internet connection!", Snackbar.LENGTH_INDEFINITE)
+                            .setAction("RETRY", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent intent = FacebookLoginActivity.this.getIntent();
+                                    finish();
+                                    FacebookLoginActivity.this.startActivity(intent);
+                                }
+                            })
+                            .show();
                 }
             }
         };
-
     }
 
     public void onResume() {
@@ -66,20 +84,27 @@ public class FacebookLoginActivity extends AppCompatActivity {
         time = delay_time - (System.currentTimeMillis() - time);
     }
 
-    protected void initLoginButton(){
+    protected void initLoginButton() {
         facebookBtn = (ImageButton) findViewById(R.id.facebook_imgBtn);
         facebookBtn.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                ((ProgressBar) findViewById(R.id.progressBar)).setVisibility(View.VISIBLE);
+                findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
                 loginFacebook();
             }
 
         });
     }
 
-    protected void loginFacebook(){
+    private boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    protected void loginFacebook() {
         Collection<String> permissions = Arrays.asList("publish_actions");
         ParseFacebookUtils.logInWithPublishPermissionsInBackground(this, permissions, new LogInCallback() {
             @Override
@@ -90,13 +115,14 @@ public class FacebookLoginActivity extends AppCompatActivity {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                 } else {
                     Log.d("MyApp", "User logged in through Facebook!");
-                    Intent intent = new Intent(FacebookLoginActivity.this , MainActivity.class);
+                    Intent intent = new Intent(FacebookLoginActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
                 }
             }
         });
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

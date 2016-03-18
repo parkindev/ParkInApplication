@@ -20,46 +20,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTouchListener.SwipeListener{
+public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTouchListener.SwipeListener {
 
-    private static final String ARG_COLUMN_COUNT = "column-count";
-    private int mColumnCount = 1;
     private List<HistoryContent.HistoryItem> items;
     private MyHistoryRecyclerViewAdapter adapter;
     private Button clearBtn;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public HistoryFragment() {
     }
-    @SuppressWarnings("unused")
-    public static HistoryFragment newInstance(int columnCount) {
-        HistoryFragment fragment = new HistoryFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.w("HistoryFragment", "onCreate");
-        if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_history_list, container, false);
+        MainActivity.navigationView.getMenu().getItem(3).setChecked(true);
         // Set the adapter
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
         items = HistoryContent.ITEMS;
-        adapter = new MyHistoryRecyclerViewAdapter(items,(MainActivity)this.getActivity());
+        adapter = new MyHistoryRecyclerViewAdapter(items, (MainActivity) this.getActivity());
         recyclerView.setAdapter(adapter);
         recyclerView.addOnItemTouchListener(new SwipeableRecyclerViewTouchListener(recyclerView, this));
         clearBtn = (Button) rootView.findViewById(R.id.clear_btn);
@@ -67,35 +56,38 @@ public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTo
             @Override
             public void onClick(View v) {
                 Log.w("HistoryFragment", "Clear Button Clicked");
-                new AlertDialog.Builder(HistoryFragment.this.getContext())
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle("Clearing All History")
-                        .setMessage("Are you sure?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                int listSize = HistoryContent.ITEMS.size();
-                                Log.w("HistoryFragment", "size before delete = " + listSize);
-                                HistoryContent.removeAllItem();
-                                adapter.notifyItemRangeRemoved(0, listSize);
-                                adapter.notifyDataSetChanged();
-                                try {
-                                    // Save the list of entries to internal storage
-                                    InternalStorage.writeHistoryObject(HistoryFragment.this.getContext());
-                                } catch (IOException e) {
-                                    Log.e("TimerFragment", e.getMessage());
+                final int LIST_SIZE = items.size();
+                if (LIST_SIZE != 0) {
+                    new AlertDialog.Builder(HistoryFragment.this.getContext())
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setTitle("Clearing All History")
+                            .setMessage("Are you sure?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.w("HistoryFragment", "size before delete = " + LIST_SIZE);
+                                    HistoryContent.removeAllItem();
+                                    adapter.notifyItemRangeRemoved(0, LIST_SIZE);
+                                    adapter.notifyDataSetChanged();
+                                    try {
+                                        // Save the list of entries to internal storage
+                                        InternalStorage.writeHistoryObject(HistoryFragment.this.getContext());
+                                    } catch (IOException e) {
+                                        Log.e("TimerFragment", e.getMessage());
+                                    }
+                                    // refresh fragment
+                                    getActivity().getSupportFragmentManager()
+                                            .beginTransaction()
+                                            .remove(HistoryFragment.this)
+                                            .addToBackStack(null)
+                                            .replace(R.id.frame_container, MainActivity.fragmentList.get("history"))
+                                            .commit();
                                 }
-                                // refresh fragment
-                                getActivity().getSupportFragmentManager()
-                                        .beginTransaction()
-                                        .remove(HistoryFragment.this)
-                                        .addToBackStack(null)
-                                        .replace(R.id.frame_container, MainActivity.fragmentList.get("history"))
-                                        .commit();
-                            }
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
+                }
+
             }
         });
         return rootView;
@@ -131,7 +123,7 @@ public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTo
         dismissAndRefresh(reverseSortedPositions);
     }
 
-    private void dismissAndRefresh(int[] reverseSortedPositions){
+    private void dismissAndRefresh(int[] reverseSortedPositions) {
         for (int position : reverseSortedPositions) {
             HistoryContent.removeItem(position);
             adapter.notifyItemRemoved(position);

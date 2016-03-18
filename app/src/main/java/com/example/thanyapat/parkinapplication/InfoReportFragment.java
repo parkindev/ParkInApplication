@@ -44,6 +44,9 @@ public class InfoReportFragment extends Fragment implements AdapterView.OnItemSe
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_info_report, container, false);
+
+        MainActivity.navigationView.getMenu().getItem(4).setChecked(true);
+
         // Spinner element
         Spinner spinner = (Spinner) rootView.findViewById(R.id.spinner_location);
 
@@ -154,7 +157,7 @@ public class InfoReportFragment extends Fragment implements AdapterView.OnItemSe
             DatabaseManager.putDataReport(selectedLocation, editedOpenHours, availability, editedCapacity, editedFee, username);
         }
         resetData();
-        Snackbar.make(rootView.findViewById(R.id.view_info_report)
+        Snackbar.make(rootView
                 , "Thank You for your suggestion!"
                 , Snackbar.LENGTH_LONG)
                 .show();

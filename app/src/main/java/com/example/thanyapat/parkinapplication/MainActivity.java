@@ -42,7 +42,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseObject;
-import com.parse.ParseUser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,8 +63,11 @@ public class MainActivity extends AppCompatActivity
     public static FragmentManager fragmentManager;
     private static GoogleApiClient googleApiClient;
     protected static List<ParkingArea> areaList = new LinkedList<>();
-    private GraphResponse response;
     protected LatLng userPosition;
+    public static NavigationView navigationView;
+    public static String name;
+    public static String email;
+    public static Bitmap profile;
 
 
     @Override
@@ -90,20 +92,18 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         if (savedInstanceState == null) {
             // on first time display view for first nav item
             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("map")).commit();
             Log.w("MainActivity", "First time enter the Application");
         }
-        ParseUser user = ParseUser.getCurrentUser();
         getUserDetailsFromFB();
     }
 
-    private void checkForAction(String action){
-        if(action.toUpperCase().equalsIgnoreCase("NAV_TO_TIMER")){
+    private void checkForAction(String action) {
+        if (action.toUpperCase().equalsIgnoreCase("NAV_TO_TIMER")) {
             if (fragmentList.get("timer") != null) {
                 Log.w("MainActivity", "TimerFragment is in memory");
                 getSupportFragmentManager()
@@ -116,28 +116,29 @@ public class MainActivity extends AppCompatActivity
                     .beginTransaction()
                     .addToBackStack(null)
                     .replace(R.id.frame_container, fragmentList.get("timer"))
-                    .commit();        }
+                    .commit();
+        }
     }
 
-    private void addFragmentToList(){
-        fragmentList.put("map",new MapFragment());
-        //fragmentList.put("timer",new TimerFragment());
-        fragmentList.put("memo",new MemoFragment());
-        fragmentList.put("home",new HomeFragment());
-        fragmentList.put("history",new HistoryFragment());
-        fragmentList.put("issue-report",new IssueReportFragment());
-        fragmentList.put("info-report",new InfoReportFragment());
+    private void addFragmentToList() {
+        fragmentList.put("map", new MapFragment());
+        fragmentList.put("memo", new MemoFragment());
+        fragmentList.put("home", new HomeFragment());
+        fragmentList.put("history", new HistoryFragment());
+        fragmentList.put("issue-report", new IssueReportFragment());
+        fragmentList.put("info-report", new InfoReportFragment());
+        fragmentList.put("settings", new SettingsFragment());
 
     }
 
 
-    public void putList(List<ParseObject> list){
-        for(ParseObject object : list ){
+    public void putList(List<ParseObject> list) {
+        for (ParseObject object : list) {
             areaList.add(new ParkingArea(object));
         }
     }
 
-    public List<ParkingArea> getAreaList(){
+    public List<ParkingArea> getAreaList() {
         return areaList;
     }
 
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void issueNotification(String action, String message){
+    public void issueNotification(String action, String message) {
         Intent resultIntent = new Intent(this, MainActivity.class);
         resultIntent.setAction(action);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -187,12 +188,13 @@ public class MainActivity extends AppCompatActivity
         int mNotificationId = 001; // Sets an ID for the notification
         // Gets an instance of the NotificationManager service to builds the notification and issues it.
         ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(mNotificationId, mBuilder.build());
-        Log.w("TimerFragment","Issue Notification");
+        Log.w("TimerFragment", "Issue Notification");
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -228,34 +230,34 @@ public class MainActivity extends AppCompatActivity
 
     private boolean displayView(int id) {
         // update the main content by replacing fragments
-        String fragmentName="";
+        String fragmentName = "";
         if (id == R.id.nav_home) {
-            fragmentName="map";
+            fragmentName = "map";
         } else if (id == R.id.nav_timer) {
-            if(userPosition!=null){
-                if(fragmentList.get("timer")==null){
+            if (userPosition != null) {
+                if (fragmentList.get("timer") == null) {
                     Log.w("MainActivity", "Assign new location for timer");
-                    fragmentList.put("timer",TimerFragment.newInstance(userPosition));
-                } else if(((TimerFragment)fragmentList.get("timer")).getArea()!=null){
+                    fragmentList.put("timer", TimerFragment.newInstance(userPosition));
+                } else if (((TimerFragment) fragmentList.get("timer")).getArea() != null) {
                     Log.w("MainActivity", "Open timer");
                 }
-                fragmentName="timer";
-            }else {
+                fragmentName = "timer";
+            } else {
                 Log.w("MainActivity", "userPosition = null");
             }
         } else if (id == R.id.nav_memo) {
-            fragmentName="memo";
+            fragmentName = "memo";
         } else if (id == R.id.nav_history) {
-            fragmentName="history";
+            fragmentName = "history";
         } else if (id == R.id.nav_report) {
             showReportDialog();
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_settings) {
-
+            fragmentName = "settings";
         }
 
-        if(!fragmentName.equals("")){
+        if (!fragmentName.equals("")) {
             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get(fragmentName)).commit();
             DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
             drawer.closeDrawer(GravityCompat.START);
@@ -265,14 +267,14 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void showReportDialog(){
+    public void showReportDialog() {
         String[] EDIT_CHOICE = {"Parking Area Info", "Technical Issue"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("What to report?")
                 .setItems(EDIT_CHOICE, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        switch(which){
+                        switch (which) {
                             case 0:
                                 getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("info-report")).commit();
                                 break;
@@ -288,7 +290,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void setUserPosition(LatLng userPos){
+    public void setUserPosition(LatLng userPos) {
         userPosition = userPos;
     }
 
@@ -297,16 +299,17 @@ public class MainActivity extends AppCompatActivity
         Log.e("Status", "App resumed");
         super.onResume();
         HistoryContent.init(this);
-        try{
+        try {
             String action = getIntent().getAction();
-            if(action != null){
+            if (action != null) {
                 checkForAction(action);
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             Log.e("MainActivity", "Problem consuming action from intent", e);
         }
-        if(this.getIntent().getStringExtra("Notification")!=null){
-        Log.w("onResume",this.getIntent().getStringExtra("Notification"));}
+        if (this.getIntent().getStringExtra("Notification") != null) {
+            Log.w("onResume", this.getIntent().getStringExtra("Notification"));
+        }
 
     }
 
@@ -374,7 +377,6 @@ public class MainActivity extends AppCompatActivity
 
     private void getUserDetailsFromFB() {
 
-        // Suggested by https://disqus.com/by/dominiquecanlas/
         Bundle parameters = new Bundle();
         parameters.putString("fields", "email,name,picture");
 
@@ -386,34 +388,34 @@ public class MainActivity extends AppCompatActivity
                 HttpMethod.GET,
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
-            /* handle the result */
                         try {
 
-                            MainActivity.this.response = response;
-                            Log.w("Response", response.getRawResponse().toString());
+                            SettingsFragment.response = response;
+                            Log.w("Response", response.getRawResponse());
 
-                            String email = response.getJSONObject().getString("email");
-                            //mEmailID.setText(email);
-                            Log.w("ParseUser",email);
+                            email = response.getJSONObject().getString("email");
+                            //mEmail.setText(email);
+                            Log.w("ParseUser", email);
 
-                            String name = response.getJSONObject().getString("name");
-                            //mUsername.setText(name);
-                            Log.w("ParseUser",name);
+                            name = response.getJSONObject().getString("name");
+                            //mName.setText(name);
+                            Log.w("ParseUser", name);
 
                             JSONObject picture = response.getJSONObject().getJSONObject("picture");
                             JSONObject data = picture.getJSONObject("data");
 
-                            //  Returns a 50x50 profile picture
-                            String pictureUrl = data.getString("url");
+                            if(data.getBoolean("is_silhouette")){
+                                // TODO: set a silhouette image instead
+                            }else{
+                                String pictureUrl = "https://graph.facebook.com/" + response.getJSONObject().getString("id") + "/picture?type=large";
 
-                            Log.w("Profile pic", "url: " + pictureUrl);
+                                Log.w("Profile pic", "url: " + pictureUrl);
 
-                            new ProfilePhotoAsync(pictureUrl).execute();
-
+                                new ProfilePhotoAsync(pictureUrl).execute();
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                        }
-                        catch (NullPointerException e) {
+                        } catch (NullPointerException e) {
                             e.printStackTrace();
                         }
                     }
@@ -440,21 +442,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     class ProfilePhotoAsync extends AsyncTask<String, String, String> {
-        public Bitmap bitmap;
         String url;
+
         public ProfilePhotoAsync(String url) {
             this.url = url;
         }
+
         @Override
         protected String doInBackground(String... params) {
             // Fetching data from URI and storing in bitmap
-            bitmap = DownloadImageBitmap(url);
+            profile = DownloadImageBitmap(url);
             return null;
         }
+
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            //mProfileImage.setImageBitmap(bitmap);
+            //mProfile.setImageBitmap(bitmap);
             //saveNewUser();
         }
     }

@@ -13,6 +13,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,12 +49,14 @@ public class MapFragment extends StatedFragment {
     private static GoogleMap map;
 
     private static LatLng userPosition;
-    protected static HashMap<String, ParkingArea>hashMarker = new HashMap<>();
+    protected static HashMap<String, ParkingArea> hashMarker = new HashMap<>();
 
     private static View rootView;
     private static LocationListener listener;
     protected static SeekBarManager seekbarmanager;
     private Marker searchMarker;
+    private Marker selectedMarker;
+
     private FloatingActionButton searchFab;
     private FloatingActionButton locationFab;
 
@@ -80,15 +84,14 @@ public class MapFragment extends StatedFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.w("MapFragment", "onCreate");
-
+        MainActivity.navigationView.getMenu().getItem(0).setChecked(true);
     }
 
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if(isAdded()){
+        if (isAdded()) {
             dbManager = new DatabaseManager(this);
             dbManager.queryAll("ParkArea");
-
         }
     }
 
@@ -100,11 +103,11 @@ public class MapFragment extends StatedFragment {
             @Override
             public void onLocationChanged(Location location) {
                 userPosition = new LatLng(location.getLatitude(), location.getLongitude());
-                if(isAdded()){
-                    Log.w("MapFragment","passing userPosition to MainActivity");
-                    ((MainActivity)getActivity()).setUserPosition(userPosition);
+                if (isAdded()) {
+                    Log.w("MapFragment", "passing userPosition to MainActivity");
+                    ((MainActivity) getActivity()).setUserPosition(userPosition);
                 }
-                if(!isLocated) {
+                if (!isLocated) {
                     Log.w("MapFragment", "move camera to userLocation");
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(userPosition, 15));
                     isLocated = true;
@@ -137,6 +140,11 @@ public class MapFragment extends StatedFragment {
             @Override
             public void onMapClick(LatLng latLng) {
                 Log.e("CLICK", ("Click on map"));
+                if (selectedMarker != null) {
+                    selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker
+                            , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
+                    selectedMarker = null;
+                }
                 slidePanel.hide();
             }
         });
@@ -146,13 +154,20 @@ public class MapFragment extends StatedFragment {
                 if (marker.equals(searchMarker)) { // search marker must do nothing when clicked
                     return true;
                 }
+                if (selectedMarker != null) {
+                    selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker
+                            , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
+                }
+                selectedMarker = marker;
+                selectedMarker.showInfoWindow();
+                selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker_clicked
+                        , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
                 Log.e("marker press", hashMarker.get(marker.getId()).getName() + " is pressed");
                 slidePanel.show(hashMarker.get(marker.getId()));
                 return true;
 
             }
         });
-        //getActivity().findViewById(R.id.toolbar).setVisibility(View.GONE); // MAGIC!!!!
         searchFab = (FloatingActionButton) rootView.findViewById(R.id.search_fab);
         searchFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,8 +186,8 @@ public class MapFragment extends StatedFragment {
 
     }
 
-    public void goToPlace(Place place){
-        if(searchMarker != null) searchMarker.remove();
+    public void goToPlace(Place place) {
+        if (searchMarker != null) searchMarker.remove();
         searchMarker = map.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName().toString()));
 
         Log.w("goToPlace", "Go to " + place.getName());
@@ -190,8 +205,9 @@ public class MapFragment extends StatedFragment {
         searchMarker.showInfoWindow();
     }
 
-    public LocationListener getLocationListener(){
-        if(listener!=null) return listener; else return null;
+    public LocationListener getLocationListener() {
+        if (listener != null) return listener;
+        else return null;
     }
 
     @Override
@@ -210,31 +226,31 @@ public class MapFragment extends StatedFragment {
         super.onResume();
         mapView.onResume();
         Log.w("MapFragment", "onResume");
-        if(this.getArguments().getParcelable(INITIAL_LOCATION)!=null){
+        if (this.getArguments().getParcelable(INITIAL_LOCATION) != null) {
             try {
                 LatLng latLng = getArguments().getParcelable(INITIAL_LOCATION);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
                 isLocated = true;
                 slidePanel.show(getParkingAreaByLatLng(latLng));
                 getArguments().clear();
-            }catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
 
         }
     }
 
-    private ParkingArea getParkingAreaByLatLng(LatLng latlng){
+    private ParkingArea getParkingAreaByLatLng(LatLng latlng) {
         Iterator it = hashMarker.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            LatLng tem = new LatLng(((ParkingArea) pair.getValue()).getLat(),((ParkingArea)pair.getValue()).getLong());
-            if(tem.equals(latlng)){
+            Map.Entry pair = (Map.Entry) it.next();
+            LatLng tem = new LatLng(((ParkingArea) pair.getValue()).getLat(), ((ParkingArea) pair.getValue()).getLong());
+            if (tem.equals(latlng)) {
                 return (ParkingArea) pair.getValue();
             }
             it.remove(); // avoids a ConcurrentModificationException
         }
-        Log.e("MapFragment", "No area match "+latlng.toString());
+        Log.e("MapFragment", "No area match " + latlng.toString());
         return null;
     }
 
@@ -265,20 +281,15 @@ public class MapFragment extends StatedFragment {
         mapView.onLowMemory();
     }
 
-    protected void markAll(){
-        for(ParkingArea object : ((MainActivity)getActivity()).getAreaList()){
-                Marker temp;
-                if(object.getPrice()!=null){
-                    temp = map.addMarker(new MarkerOptions().position(new LatLng(object.getLat(), object.getLong()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker, "" + ApplicationUtils.durationToPrice(object, seekbarmanager.getValue())))));
-                } else {
-                    temp = map.addMarker(new MarkerOptions().position(new LatLng(object.getLat(), object.getLong()))
-                        .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker, ""))));
-                }
-                hashMarker.put(temp.getId(), object);
+    protected void markAll() {
+        for (ParkingArea object : ((MainActivity) getActivity()).getAreaList()) {
+            Marker temp = map.addMarker(new MarkerOptions()
+                    .position(new LatLng(object.getLat(), object.getLong()))
+                    .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker
+                            , object.getPrice() != null ? "" + ApplicationUtils.durationToPrice(object, seekbarmanager.getValue()) : ""))));
+            hashMarker.put(temp.getId(), object);
         }
-        Log.w("MapFragment","Finish Adding Markers");
-
+        Log.w("MapFragment", "Finish Adding Markers");
     }
 
     protected Bitmap writeTextOnDrawable(int drawableId, String text) {
@@ -290,7 +301,7 @@ public class MapFragment extends StatedFragment {
 
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.BLUE);
+        paint.setColor(Color.DKGRAY);
         paint.setTypeface(tf);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(convertToPixels(this.getContext(), 11));
@@ -299,22 +310,22 @@ public class MapFragment extends StatedFragment {
         paint.getTextBounds(text, 0, text.length(), textRect);
         Canvas canvas = new Canvas(bm);
         //If the text is bigger than the canvas , reduce the font size
-        if(textRect.width() >= (canvas.getWidth() - 4))     //the padding on either sides is considered as 4, so as to appropriately fit in the text
+        if (textRect.width() >= (canvas.getWidth() - 4))     //the padding on either sides is considered as 4, so as to appropriately fit in the text
             paint.setTextSize(convertToPixels(this.getContext(), 7));        //Scaling needs to be used for different dpi's
 
         //Calculate the positions
         int xPos = (canvas.getWidth() / 2) - 2;     //-2 is for regulating the x position offset
 
         //"- ((paint.descent() + paint.ascent()) / 2)" is the distance from the baseline to the center.
-        int yPos = (int) ((canvas.getHeight() / 2) + ((paint.descent() + paint.ascent()) / 2)) ;
+        int yPos = (int) ((canvas.getHeight() / 2) + ((paint.descent() + paint.ascent()) / 2));
 
-        canvas.drawText(text, xPos, yPos, paint);
-        return  bm;
+        canvas.drawText(text.equals("") ? "" : text + "฿", xPos, yPos, paint);
+        return bm;
     }
 
     public static int convertToPixels(Context context, int nDP) {
         final float conversionScale = context.getResources().getDisplayMetrics().density;
-        return (int) ((nDP * conversionScale) + 0.5f) ;
+        return (int) ((nDP * conversionScale) + 0.5f);
 
     }
 
@@ -331,10 +342,10 @@ public class MapFragment extends StatedFragment {
         // For example:
         //outState.putString("text", tvSample.getText().toString());
         Log.w("MapFragment", "Saving State");
-    if(map!=null && seekbarmanager!=null){
-        outState.putParcelable("camera", map.getCameraPosition());
-        outState.putInt("seekBarValue", seekbarmanager.getValue());
-    }
+        if (map != null && seekbarmanager != null) {
+            outState.putParcelable("camera", map.getCameraPosition());
+            outState.putInt("seekBarValue", seekbarmanager.getValue());
+        }
     }
 
     /**
@@ -346,9 +357,10 @@ public class MapFragment extends StatedFragment {
         // For example:
         //tvSample.setText(savedInstanceState.getString("text"));
         Log.w("MapFragment", "Loading State");
-        if(map!=null && seekbarmanager!=null){
-        map.moveCamera(CameraUpdateFactory.newCameraPosition((CameraPosition)savedInstanceState.getParcelable("camera")));
-        seekbarmanager.updateSeekBar(savedInstanceState.getInt("seekBarValue"));}
+        if (map != null && seekbarmanager != null) {
+            map.moveCamera(CameraUpdateFactory.newCameraPosition((CameraPosition) savedInstanceState.getParcelable("camera")));
+            seekbarmanager.updateSeekBar(savedInstanceState.getInt("seekBarValue"));
+        }
         markAll();
     }
 
@@ -383,7 +395,7 @@ public class MapFragment extends StatedFragment {
 
         // Check that the result was from the autocomplete widget.
         if (requestCode == REQUEST_CODE_AUTOCOMPLETE) {
-            if (resultCode == getActivity().RESULT_OK) {
+            if (resultCode == MainActivity.RESULT_OK) {
                 // Get the user's selected place from the Intent.
                 Place place = PlaceAutocomplete.getPlace(this.getContext(), data);
                 Log.w("AutoComplete", "Place Selected: " + place.getName());
@@ -393,7 +405,7 @@ public class MapFragment extends StatedFragment {
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this.getContext(), data);
                 Log.e("AutoComplete", "Error: Status = " + status.toString());
-            } else if (resultCode == getActivity().RESULT_CANCELED) {
+            } else if (resultCode == MainActivity.RESULT_CANCELED) {
                 // Indicates that the activity closed before a selection was made. For example if
                 // the user pressed the back button.
             }

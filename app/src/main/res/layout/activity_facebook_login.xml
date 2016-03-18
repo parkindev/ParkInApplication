@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="FacebookLoginActivity">
+    tools:context="FacebookLoginActivity"
+    android:id="@+id/view_facebook_login">
 
     <include layout="@layout/content_facebook_login" />
 
