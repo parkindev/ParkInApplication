@@ -17,7 +17,6 @@ public class HistoryContent implements Serializable{
     public static List<HistoryItem> ITEMS;
 
     public static void init(Context context){
-        // TODO: take item from internal storage
         try {
             ITEMS = InternalStorage.readHistoryObject(context) == null ? new ArrayList<HistoryItem>() : (ArrayList<HistoryContent.HistoryItem>) InternalStorage.readHistoryObject(context);
         } catch (IOException e) {

@@ -9,15 +9,6 @@
     android:fitsSystemWindows="true"
     tools:openDrawer="start">
 
-    <FrameLayout
-        android:id="@+id/frame_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:foregroundGravity="fill"
-        android:fitsSystemWindows="true">
-
-    </FrameLayout>
-
     <include
         layout="@layout/app_bar_main"
         android:layout_width="match_parent"

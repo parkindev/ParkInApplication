@@ -1,34 +1,29 @@
 package com.example.thanyapat.parkinapplication;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 import com.mikhaellopez.circularimageview.CircularImageView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-
+import com.parse.ParseUser;
 
 public class SettingsFragment extends StatedFragment {
+
+    public static String WILL_IMAGE_SAVED = "willImageSaved";
+    public static String IS_NOTIFICATION_ENABLED = "isNotificationEnabled";
+    public static String CURRENT_FRAGMENT = "current-fragment";
+    private static final String TAG = "SettingsFragment";
 
     public static GraphResponse response;
     private View rootView;
@@ -51,6 +46,11 @@ public class SettingsFragment extends StatedFragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_setting, container, false);
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
+        ((MainActivity)getActivity()).setActionBarTitle("SETTINGS");
+        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
+        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.blank_icon);
+
         mEmail = (TextView)rootView.findViewById(R.id.textView_email);
         mEmail.setText(MainActivity.email);
         mName = (TextView)rootView.findViewById(R.id.textView_name);
@@ -58,8 +58,46 @@ public class SettingsFragment extends StatedFragment {
         mProfile = (CircularImageView) rootView.findViewById(R.id.imgView_profile);
         mProfile.setImageBitmap(MainActivity.profile);
 
+        Switch notiSw = (Switch) rootView.findViewById(R.id.switch_notification);
+        notiSw.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(IS_NOTIFICATION_ENABLED,true));
+        notiSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putBoolean(IS_NOTIFICATION_ENABLED, isChecked).commit();
+                Log.w(TAG, "isNotificationEnabled set = "
+                        + getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(IS_NOTIFICATION_ENABLED, true));
+            }
+        });
+        Switch imgSw = (Switch) rootView.findViewById(R.id.switch_save_image);
+        imgSw.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(WILL_IMAGE_SAVED, true));
+        imgSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putBoolean(WILL_IMAGE_SAVED, isChecked).commit();
+                Log.w(TAG, "willImageSaved set = "
+                        + getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(WILL_IMAGE_SAVED, true));
+            }
+        });
 
-
+        (rootView.findViewById(R.id.textView_sign_out)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(SettingsFragment.this.getContext())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("Log Out")
+                    .setMessage("Are you sure?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ParseUser.logOut();
+                            Intent intent = new Intent(getActivity(), FacebookLoginActivity.class);
+                            intent.putExtra(FacebookLoginActivity.IS_LOGOUT, true);
+                            startActivity(intent);
+                            getActivity().finish();
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+            }
+        });
         return rootView;
     }
 

@@ -1,48 +1,148 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.example.thanyapat.parkinapplication.SettingFragment">
 
     <ScrollView
+        android:id="@+id/scrollView_setting"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/scrollView_setting"
         android:layout_gravity="center"
-        android:background="#b9b9b9">
+        android:background="@color/gray_background_color">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <com.mikhaellopez.circularimageview.CircularImageView
+                android:id="@+id/imgView_profile"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                app:civ_border_width="0dp"
-                android:id="@+id/imgView_profile"
                 android:layout_gravity="center_horizontal"
                 android:clickable="false"
-                android:layout_margin="30dp" />
+                app:civ_border_width="0dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp" />
 
             <TextView
+                android:id="@+id/textView_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="null"
-                android:id="@+id/textView_name"
                 android:layout_gravity="center_horizontal"
+                android:text="Username"
                 android:textColor="#00882B"
                 android:textSize="20dp" />
 
             <TextView
+                android:id="@+id/textView_email"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="null"
-                android:id="@+id/textView_email"
                 android:layout_gravity="center_horizontal"
+                android:text="E-mail"
                 android:textColor="#000000"
                 android:textSize="15dp" />
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cv_settings"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                android:background="#ffffff"
+                card_view:cardCornerRadius="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:id="@+id/textView_about_us"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="10dp"
+                            android:paddingLeft="10dp"
+                            android:paddingTop="10dp"
+                            android:text="About Us"
+                            android:textColor="#000000" />
+
+
+                    </FrameLayout>
+
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textView_notification"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="10dp"
+                            android:paddingLeft="10dp"
+                            android:paddingTop="10dp"
+                            android:text="Notification"
+                            android:textColor="#000000" />
+
+                        <Switch
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/switch_notification"
+                            android:layout_gravity="right|center_vertical"
+                            android:paddingRight="10dp" />
+
+                    </FrameLayout>
+
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textView_save_image"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="10dp"
+                            android:paddingLeft="10dp"
+                            android:paddingTop="10dp"
+                            android:text="Save Image in Device"
+                            android:textColor="#000000" />
+
+                        <Switch
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/switch_save_image"
+                            android:layout_gravity="right|center_vertical"
+                            android:paddingRight="10dp" />
+
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/textView_sign_out"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:paddingBottom="10dp"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="10dp"
+                        android:text="SIGN OUT"
+                        android:textColor="#ff0000" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+
         </LinearLayout>
     </ScrollView>
 

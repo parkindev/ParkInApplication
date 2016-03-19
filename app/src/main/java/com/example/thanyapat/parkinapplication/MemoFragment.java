@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,11 +27,8 @@ import android.widget.TextView;
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 
 public class MemoFragment extends StatedFragment {
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    private String mParam1;
-    private String mParam2;
+    private static final String TAG = "MemoFragment";
 
     public static final int REQUEST_CAMERA = 2;
 
@@ -46,22 +44,10 @@ public class MemoFragment extends StatedFragment {
     public MemoFragment() {
         // Required empty public constructor
     }
-    public static MemoFragment newInstance(String param1, String param2) {
-        MemoFragment fragment = new MemoFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
     }
 
@@ -70,6 +56,10 @@ public class MemoFragment extends StatedFragment {
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_memo, container, false);
         MainActivity.navigationView.getMenu().getItem(2).setChecked(true);
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
+        ((MainActivity)getActivity()).setActionBarTitle("MEMO");
+        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
+        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.blank_icon);
 
         imageView = (ImageView)rootView.findViewById(R.id.imageView);
         editText = (EditText)rootView.findViewById(R.id.editText);
@@ -96,8 +86,11 @@ public class MemoFragment extends StatedFragment {
             try {
                 bitmap = Images.Media.getBitmap(cr, uri);
                 imageView.setImageBitmap(bitmap);
-                Log.w("MemoFragment", uri.getPath());
-                saveImage();
+                Log.w(TAG, uri.getPath());
+                if(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(SettingsFragment.WILL_IMAGE_SAVED, true)) {
+                    Log.w(TAG, "willImageSaved = " + getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean("willImageSaved", true));
+                    saveImage();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -116,7 +109,7 @@ public class MemoFragment extends StatedFragment {
     }
 
     public void onResume() {
-        Log.w("MemoFragment", "onResume");
+        Log.w(TAG, "onResume");
         super.onResume();
         if(!lotNo.equals("")){
             editText.setText(lotNo);
@@ -124,7 +117,7 @@ public class MemoFragment extends StatedFragment {
     }
 
     public void onPause() {
-        Log.w("MemoFragment", "onPause");
+        Log.w(TAG, "onPause");
         super.onPause();
     }
 

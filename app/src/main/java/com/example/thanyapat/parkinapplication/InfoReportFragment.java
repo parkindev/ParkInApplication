@@ -1,5 +1,6 @@
 package com.example.thanyapat.parkinapplication;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -22,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class InfoReportFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
+public class InfoReportFragment extends Fragment implements AdapterView.OnItemSelectedListener {
+    private static final String TAG = "InforReportFragment";
 
     private View rootView;
     private boolean isSomethingChange = false;
@@ -46,6 +48,10 @@ public class InfoReportFragment extends Fragment implements AdapterView.OnItemSe
         rootView = inflater.inflate(R.layout.fragment_info_report, container, false);
 
         MainActivity.navigationView.getMenu().getItem(4).setChecked(true);
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
+        ((MainActivity)getActivity()).setActionBarTitle("REPORT");
+        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
+        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.submit_icon);
 
         // Spinner element
         Spinner spinner = (Spinner) rootView.findViewById(R.id.spinner_location);
@@ -143,15 +149,10 @@ public class InfoReportFragment extends Fragment implements AdapterView.OnItemSe
             }
         });
 
-        // add submit button listener
-        Button submitBtn = (Button) rootView.findViewById(R.id.submit_btn);
-        submitBtn.setOnClickListener(this);
-
         return rootView;
     }
 
-    @Override
-    public void onClick(View v) {
+    public void submit(){
         String username = ParseUser.getCurrentUser() != null ? ParseUser.getCurrentUser().getUsername() : "null";
         if (isSomethingChange) {
             DatabaseManager.putDataReport(selectedLocation, editedOpenHours, availability, editedCapacity, editedFee, username);

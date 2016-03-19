@@ -26,6 +26,7 @@ import java.util.Collection;
 
 public class FacebookLoginActivity extends AppCompatActivity {
 
+    public static String IS_LOGOUT = "isLogOut";
     private ImageButton facebookBtn;
     private SplashScreenFragment splashScreen = new SplashScreenFragment();
     Handler handler;
@@ -40,7 +41,6 @@ public class FacebookLoginActivity extends AppCompatActivity {
 
         handler = new Handler();
         getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, splashScreen).commit();
-
         runnable = new Runnable() {
             public void run() {
                 Log.e("Status", "Stop Splashing");
@@ -73,9 +73,20 @@ public class FacebookLoginActivity extends AppCompatActivity {
 
     public void onResume() {
         super.onResume();
-        delay_time = time;
-        handler.postDelayed(runnable, delay_time);
-        time = System.currentTimeMillis();
+        if(getIntent().getExtras()!=null){
+            if(getIntent().getExtras().getBoolean(IS_LOGOUT)){
+                getSupportFragmentManager().beginTransaction().remove(splashScreen).commit();
+                initLoginButton();
+            } else {
+                delay_time = time;
+                handler.postDelayed(runnable, delay_time);
+                time = System.currentTimeMillis();
+            }
+        }else{
+            delay_time = time;
+            handler.postDelayed(runnable, delay_time);
+            time = System.currentTimeMillis();
+        }
     }
 
     public void onPause() {
@@ -115,8 +126,7 @@ public class FacebookLoginActivity extends AppCompatActivity {
                     Log.d("MyApp", "User signed up and logged in through Facebook!");
                 } else {
                     Log.d("MyApp", "User logged in through Facebook!");
-                    Intent intent = new Intent(FacebookLoginActivity.this, MainActivity.class);
-                    startActivity(intent);
+                    startActivity(new Intent(FacebookLoginActivity.this, MainActivity.class));
                     finish();
                 }
             }

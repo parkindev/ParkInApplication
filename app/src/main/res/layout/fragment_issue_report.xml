@@ -7,46 +7,11 @@
     android:orientation="vertical"
     tools:context="com.example.thanyapat.parkinapplication.IssueReportFragment">
 
-    <FrameLayout
-        android:id="@+id/header_issue_report"
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="2dp"
-        android:layout_weight="0.1"
-        android:background="#ffffff"
-        android:clickable="true"
-        android:contextClickable="true"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/submit_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|right"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/edit_button_boarder"
-            android:duplicateParentState="true"
-            android:text="SUBMIT"
-            android:textSize="20sp"
-            android:visibility="visible" />
-
-        <TextView
-            android:id="@+id/label_issue_report"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center_horizontal"
-            android:text="REPORT"
-            android:textColor="#000000"
-            android:textSize="30sp" />
-
-    </FrameLayout>
-
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="0.9"
-        android:background="#b9b9b9"
+        android:background="@color/gray_background_color"
         android:fillViewport="false"
         android:orientation="vertical">
 

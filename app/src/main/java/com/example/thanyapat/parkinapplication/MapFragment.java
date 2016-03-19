@@ -225,6 +225,7 @@ public class MapFragment extends StatedFragment {
     public void onResume() {
         super.onResume();
         mapView.onResume();
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.GONE);
         Log.w("MapFragment", "onResume");
         if (this.getArguments().getParcelable(INITIAL_LOCATION) != null) {
             try {
@@ -294,8 +295,10 @@ public class MapFragment extends StatedFragment {
 
     protected Bitmap writeTextOnDrawable(int drawableId, String text) {
 
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), drawableId)
-                .copy(Bitmap.Config.ARGB_8888, true);
+
+        Bitmap bMap = BitmapFactory.decodeResource(getResources(), drawableId).copy(Bitmap.Config.ARGB_8888, true);
+
+        Bitmap bm = Bitmap.createScaledBitmap(bMap, 105, 150, true);
 
         Typeface tf = Typeface.create("Helvetica", Typeface.BOLD);
 

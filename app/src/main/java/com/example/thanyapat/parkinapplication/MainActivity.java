@@ -4,12 +4,16 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -25,15 +29,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.example.thanyapat.parkinapplication.History.HistoryContent;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationAvailability;
@@ -68,6 +76,11 @@ public class MainActivity extends AppCompatActivity
     public static String name;
     public static String email;
     public static Bitmap profile;
+    private static Toolbar toolbar;
+    private Menu actionBarMenu;
+
+    public static SharedPreferences sharedPref;
+    public static final String PARKIN_PREFERENCES = "ParkInPrefs" ;
 
 
     @Override
@@ -75,21 +88,26 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         addFragmentToList();
+        // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(new MyConnectionFailedListener())
-                .build();
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+                .addApi(AppIndex.API).build();
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setVisibility(View.GONE);
         fragmentManager = getSupportFragmentManager();
         // initialize the navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this
+                , drawer
+                , toolbar
+                , R.string.navigation_drawer_open
+                , R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -100,6 +118,7 @@ public class MainActivity extends AppCompatActivity
             Log.w("MainActivity", "First time enter the Application");
         }
         getUserDetailsFromFB();
+        sharedPref = getSharedPreferences(PARKIN_PREFERENCES, Context.MODE_PRIVATE);
     }
 
     private void checkForAction(String action) {
@@ -120,15 +139,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     private void addFragmentToList() {
         fragmentList.put("map", new MapFragment());
         fragmentList.put("memo", new MemoFragment());
-        fragmentList.put("home", new HomeFragment());
         fragmentList.put("history", new HistoryFragment());
         fragmentList.put("issue-report", new IssueReportFragment());
         fragmentList.put("info-report", new InfoReportFragment());
         fragmentList.put("settings", new SettingsFragment());
-
+        //fragmentList.put("home", new HomeFragment());
     }
 
 
@@ -137,6 +156,7 @@ public class MainActivity extends AppCompatActivity
             areaList.add(new ParkingArea(object));
         }
     }
+
 
     public List<ParkingArea> getAreaList() {
         return areaList;
@@ -194,9 +214,18 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-
+        actionBarMenu = menu;
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    public void changeMenuIcon(int drawable){
+        actionBarMenu.findItem(R.id.action_main).setIcon(getResources().getDrawable(drawable));
+    }
+
+    public void setActionBarTitle(String title){
+        TextView toolBarTitle = (TextView) findViewById(R.id.toolbar_title);
+        toolBarTitle.setText(title);
     }
 
     @Override
@@ -205,12 +234,25 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        String currentFragment = getPreferences(Context.MODE_PRIVATE).getString(SettingsFragment.CURRENT_FRAGMENT, "");
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        //check what fragment are currently displayed and perform specific action
+        if(id == R.id.action_main && !currentFragment.equals("")){
+            switch(currentFragment){
+                case "TimerFragment":
+                    ((TimerFragment)fragmentList.get("timer")).edit();
+                    return true;
+                case "HistoryFragment":
+                    ((HistoryFragment)fragmentList.get("history")).clear();
+                    return true;
+                case "IssueReportFragment":
+                    ((IssueReportFragment)fragmentList.get("issue-report")).submit();
+                    return true;
+                case "InfoReportFragment":
+                    ((InfoReportFragment)fragmentList.get("info-report")).submit();
+                    return true;
+            }
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -318,12 +360,38 @@ public class MainActivity extends AppCompatActivity
         Log.e("Status", "App started");
         super.onStart();
         googleApiClient.connect();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(googleApiClient, viewAction);
     }
 
     @Override
     protected void onStop() {
         Log.e("Status", "App stopped");
         super.onStop();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(googleApiClient, viewAction);
         if (googleApiClient != null && googleApiClient.isConnected()) {
             // Disconnect Google API Client if available and connected
             googleApiClient.disconnect();

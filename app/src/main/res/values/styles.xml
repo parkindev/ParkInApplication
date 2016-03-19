@@ -3,19 +3,24 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@android:color/black</item><!-- Text Color -->
+        <item name="colorPrimary">@android:color/white</item><!-- Text Color -->
         <!-- <item name="colorPrimaryDark">@android:color/white</item> --><!-- Statusbar Color-->
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="drawerArrowStyle">@style/ParkInDrawerArrowToggle</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat">
-
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="ParkInDrawerArrowToggle" parent="Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">@android:color/black</item>
+    </style>
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
 </resources>

@@ -21,10 +21,10 @@ import java.util.List;
 
 
 public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTouchListener.SwipeListener {
+    private static final String TAG = "HistoryFragment";
 
     private List<HistoryContent.HistoryItem> items;
     private MyHistoryRecyclerViewAdapter adapter;
-    private Button clearBtn;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -36,7 +36,7 @@ public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTo
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.w("HistoryFragment", "onCreate");
+        Log.w(TAG, "onCreate");
     }
 
     @Override
@@ -44,6 +44,11 @@ public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTo
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_history_list, container, false);
         MainActivity.navigationView.getMenu().getItem(3).setChecked(true);
+        ((MainActivity)getActivity()).setActionBarTitle("HISTORY");
+        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
+        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.clear_icon);
+
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
         // Set the adapter
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
@@ -51,46 +56,42 @@ public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTo
         adapter = new MyHistoryRecyclerViewAdapter(items, (MainActivity) this.getActivity());
         recyclerView.setAdapter(adapter);
         recyclerView.addOnItemTouchListener(new SwipeableRecyclerViewTouchListener(recyclerView, this));
-        clearBtn = (Button) rootView.findViewById(R.id.clear_btn);
-        clearBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.w("HistoryFragment", "Clear Button Clicked");
-                final int LIST_SIZE = items.size();
-                if (LIST_SIZE != 0) {
-                    new AlertDialog.Builder(HistoryFragment.this.getContext())
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .setTitle("Clearing All History")
-                            .setMessage("Are you sure?")
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Log.w("HistoryFragment", "size before delete = " + LIST_SIZE);
-                                    HistoryContent.removeAllItem();
-                                    adapter.notifyItemRangeRemoved(0, LIST_SIZE);
-                                    adapter.notifyDataSetChanged();
-                                    try {
-                                        // Save the list of entries to internal storage
-                                        InternalStorage.writeHistoryObject(HistoryFragment.this.getContext());
-                                    } catch (IOException e) {
-                                        Log.e("TimerFragment", e.getMessage());
-                                    }
-                                    // refresh fragment
-                                    getActivity().getSupportFragmentManager()
-                                            .beginTransaction()
-                                            .remove(HistoryFragment.this)
-                                            .addToBackStack(null)
-                                            .replace(R.id.frame_container, MainActivity.fragmentList.get("history"))
-                                            .commit();
-                                }
-                            })
-                            .setNegativeButton("No", null)
-                            .show();
-                }
 
-            }
-        });
         return rootView;
+    }
+
+    public void clear(){
+        Log.w(TAG, "Clear Button Clicked");
+        if (!items.isEmpty()) {
+            new AlertDialog.Builder(HistoryFragment.this.getContext())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("Clearing All History")
+                    .setMessage("Are you sure?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.w(TAG, "size before delete = " + items.size());
+                            HistoryContent.removeAllItem();
+                            adapter.notifyItemRangeRemoved(0, items.size());
+                            adapter.notifyDataSetChanged();
+                            try {
+                                // Save the list of entries to internal storage
+                                InternalStorage.writeHistoryObject(HistoryFragment.this.getContext());
+                            } catch (IOException e) {
+                                Log.e("TimerFragment", e.getMessage());
+                            }
+                            // refresh fragment
+                            getActivity().getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .remove(HistoryFragment.this)
+                                    .addToBackStack(null)
+                                    .replace(R.id.frame_container, MainActivity.fragmentList.get("history"))
+                                    .commit();
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        }
     }
 
     @Override

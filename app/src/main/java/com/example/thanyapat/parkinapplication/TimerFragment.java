@@ -1,6 +1,7 @@
 package com.example.thanyapat.parkinapplication;
 
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -40,7 +41,9 @@ import me.grantland.widget.AutofitTextView;
 public class TimerFragment extends StatedFragment {
 
     private static final String USER_LOCATION = "user-location";
+    private static final String TAG = "TimerFragment";
 
+    
     private View rootView;
     private Button startBtn;
     private TextView arrivalTextView;
@@ -48,7 +51,6 @@ public class TimerFragment extends StatedFragment {
     private TextView parkingTextView;
     private static ParkingArea area = null;
     private TextView location_label;
-    private TextView editBtn;
     private boolean isTimeSet = false;
     private static boolean isCounting = false;
     private static int hour = 0;
@@ -78,7 +80,7 @@ public class TimerFragment extends StatedFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.w("TimerFragment", "onCreate");
+        Log.w(TAG, "onCreate");
 
         Bundle bundle = getArguments();
         if (bundle != null) {
@@ -90,7 +92,12 @@ public class TimerFragment extends StatedFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
+        ((MainActivity)getActivity()).setActionBarTitle("TIMER");
         MainActivity.navigationView.getMenu().getItem(1).setChecked(true);
+        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
+        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.edit_icon);
+
         rootView = inflater.inflate(R.layout.fragment_timer, container, false);
         return rootView;
     }
@@ -98,7 +105,7 @@ public class TimerFragment extends StatedFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (area == null) {
-            Log.w("TimerFragment", "area = null");
+            Log.w(TAG, "area = null");
             return;
         }
         initiateAttributes();
@@ -107,18 +114,6 @@ public class TimerFragment extends StatedFragment {
     private void initiateAttributes() {
         handler = new TimeChangeHandler();
         isLocationChanged = false;
-        editBtn = (TextView) rootView.findViewById(R.id.edit_btn);
-        editBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String[] EDIT_CHOICE = {"Arrival Time", "Location"};
-                Log.w("TimerFragment", "EditButton clicked");
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Please Select")
-                        .setItems(EDIT_CHOICE, new DialogClickListener());
-                builder.create().show();
-            }
-        });
 
         arrivalTextView = (TextView) rootView.findViewById(R.id.tv_arrival);
 
@@ -134,6 +129,15 @@ public class TimerFragment extends StatedFragment {
         startBtn.setOnClickListener(new TimerButtonClickListener());
     }
 
+    public void edit(){
+        String[] EDIT_CHOICE = {"Arrival Time", "Location"};
+        Log.w(TAG, "EditButton clicked");
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Please Select")
+                .setItems(EDIT_CHOICE, new DialogClickListener());
+        builder.create().show();
+    }
+
     public void onResume() {
         super.onResume();
         if (isCounting) { //
@@ -147,10 +151,10 @@ public class TimerFragment extends StatedFragment {
         } else if (!isCounting) { // if Timer not started --> arrival time = current time
             setCurrentTime();
             arrivalTextView.setText(arrivalTime);
-            Log.w("TimerFragment", "Timer for " + area.getName() + ", arrival time is " + arrivalTime);
+            Log.w(TAG, "Timer for " + area.getName() + ", arrival time is " + arrivalTime);
         } else if (isTimeSet) {
             arrivalTextView.setText(arrivalTime);
-            Log.w("TimerFragment", "Timer for " + area.getName() + ", arrival time is " + arrivalTime);
+            Log.w(TAG, "Timer for " + area.getName() + ", arrival time is " + arrivalTime);
         } else if (!isTimeSet) {
             setCurrentTime();
         }
@@ -164,7 +168,7 @@ public class TimerFragment extends StatedFragment {
             arrivalTime = "" + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE);
         }
         arrivalTextView.setText(arrivalTime);
-        Log.w("TimerFragment", "Set arrival time to current time : " + arrivalTime);
+        Log.w(TAG, "Set arrival time to current time : " + arrivalTime);
     }
 
     public ParkingArea getArea() {
@@ -249,13 +253,11 @@ public class TimerFragment extends StatedFragment {
         public void switchUI() {
             if (isCounting) {
                 parkingTextView.setText("0");
-                editBtn.setEnabled(true);
                 startBtn.setBackgroundColor(COLOR_GREEN);
                 startBtn.setText("START");
                 rootView.findViewById(R.id.view_after).setVisibility(View.GONE);
                 rootView.findViewById(R.id.view_before).setVisibility(View.VISIBLE);
             } else {
-                editBtn.setEnabled(false);
                 startBtn.setBackgroundColor(COLOR_RED);
                 startBtn.setText("STOP");
                 rootView.findViewById(R.id.view_after).setVisibility(View.VISIBLE);
@@ -350,7 +352,10 @@ public class TimerFragment extends StatedFragment {
                     priceSum = ApplicationUtils.durationToPrice(area, min);
                     parkingTextView.setText(String.valueOf(priceSum));
                 }
-                ((MainActivity) getActivity()).issueNotification("NAV_TO_TIMER", "Total fee : " + priceSum + " Baht");
+                if(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(SettingsFragment.IS_NOTIFICATION_ENABLED, true)) {
+                    Log.w(TAG, "isNotificationEnabled = " + getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean("isNotificationEnabled", true));
+                    ((MainActivity) getActivity()).issueNotification("NAV_TO_TIMER", "Total fee : " + priceSum + " Baht");
+                }
                 sec = 0;
             }
             Log.w("Timer", "parking duration is " + hour + "H " + min + "M " + sec + "S");
