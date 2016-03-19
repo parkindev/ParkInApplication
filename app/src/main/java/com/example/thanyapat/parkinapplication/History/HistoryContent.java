@@ -14,11 +14,12 @@ import java.util.List;
 
 public class HistoryContent implements Serializable{
 
-    public static List<HistoryItem> ITEMS;
+    public static List<HistoryItem> ITEMS = new ArrayList<HistoryItem>();
 
+    @SuppressWarnings("unchecked")
     public static void init(Context context){
         try {
-            ITEMS = InternalStorage.readHistoryObject(context) == null ? new ArrayList<HistoryItem>() : (ArrayList<HistoryContent.HistoryItem>) InternalStorage.readHistoryObject(context);
+            ITEMS = (ArrayList<HistoryContent.HistoryItem>) InternalStorage.readHistoryObject(context);
         } catch (IOException e) {
             Log.e("HistoryFragment", e.getMessage());
         } catch (ClassNotFoundException e) {

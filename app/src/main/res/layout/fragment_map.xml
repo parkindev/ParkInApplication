@@ -32,7 +32,10 @@
         android:src="@drawable/action_search"
         app:backgroundTint="#ffffff"
         android:tint="#000000"
-        android:layout_margin="10dp" />
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/location_fab"
@@ -42,7 +45,7 @@
         app:backgroundTint="#ffffff"
         android:tint="#000000"
         android:layout_gravity="top|end"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="95dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp" />
 

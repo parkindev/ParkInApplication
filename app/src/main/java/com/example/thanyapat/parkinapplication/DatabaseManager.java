@@ -1,5 +1,8 @@
 package com.example.thanyapat.parkinapplication;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -8,6 +11,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.util.List;
 
@@ -34,7 +38,34 @@ public class DatabaseManager {
                     main.markAll();
                 } else {
                     Log.e("Query result", "Error: " + e.getMessage());
+                    switch (e.getCode()) {
+                        case ParseException.INVALID_SESSION_TOKEN:
+                            handleInvalidSessionToken();
+                            break;
+                        // Other Parse API errors that you want to explicitly handle
+                    }
                 }
+            }
+            private void handleInvalidSessionToken() {
+                new AlertDialog.Builder(main.getActivity())
+                        .setMessage("Session is no longer valid, please log out and log in again.")
+                   .setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ParseUser.logOut();
+                        Intent intent = new Intent(main.getActivity(), FacebookLoginActivity.class);
+                        intent.putExtra(FacebookLoginActivity.IS_LOGOUT, true);
+                        main.getActivity().startActivity(intent);
+                        main.getActivity().finish();
+                    }
+                }).create().show();
+
+                //--------------------------------------
+                // Option #2: Show login screen so user can re-authenticate.
+                //--------------------------------------
+                // You may want this if the logout button could be inaccessible in the UI.
+                //
+                // startActivityForResult(new ParseLoginBuilder(getActivity()).build(), 0);
             }
         });
     }
@@ -67,5 +98,6 @@ public class DatabaseManager {
         report.put("username", username);
         report.saveInBackground();
     }
+
 
 }

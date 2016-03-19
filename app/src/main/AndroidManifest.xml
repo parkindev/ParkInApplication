@@ -27,6 +27,7 @@
         android:allowBackup="true"
         android:largeHeap="true"
         android:icon="@drawable/icon_app"
+        android:theme="@style/AppTheme"
         android:label="@string/app_name">
 
         <meta-data

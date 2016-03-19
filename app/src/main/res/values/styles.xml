@@ -4,15 +4,17 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@android:color/white</item><!-- Text Color -->
-        <!-- <item name="colorPrimaryDark">@android:color/white</item> --><!-- Statusbar Color-->
+        <item name="colorPrimaryDark">@android:color/white</item> <!-- Statusbar Color-->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="drawerArrowStyle">@style/ParkInDrawerArrowToggle</item>
+        <item name="android:windowTranslucentStatus">true</item>
 
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
     </style>
 
     <style name="ParkInDrawerArrowToggle" parent="Widget.AppCompat.DrawerArrowToggle">
@@ -22,5 +24,14 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+    <style name="BottomSheetStyleDialog" parent="BottomSheet.Dialog">
+        <item name="android:backgroundDimAmount">0.5</item>
+        <item name="android:windowAnimationStyle">@style/BottomSheet.Animation</item>
+        <item name="android:textColor">@color/abc_search_url_text_pressed</item>
+        <item name="bs_dialogBackground">@android:color/white</item>
+        <item name="bs_dividerColor">#8Affffff</item>
+        <item name="bs_numColumns">3</item>
+    </style>
 
 </resources>

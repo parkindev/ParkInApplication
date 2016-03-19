@@ -52,7 +52,7 @@ public class HistoryFragment extends Fragment implements SwipeableRecyclerViewTo
         // Set the adapter
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        items = HistoryContent.ITEMS;
+        items = HistoryContent.ITEMS==null ? new ArrayList<HistoryContent.HistoryItem>() : HistoryContent.ITEMS;
         adapter = new MyHistoryRecyclerViewAdapter(items, (MainActivity) this.getActivity());
         recyclerView.setAdapter(adapter);
         recyclerView.addOnItemTouchListener(new SwipeableRecyclerViewTouchListener(recyclerView, this));

@@ -229,6 +229,7 @@ public class MapFragment extends StatedFragment {
         Log.w("MapFragment", "onResume");
         if (this.getArguments().getParcelable(INITIAL_LOCATION) != null) {
             try {
+                // TODO: Change the marker's color
                 LatLng latLng = getArguments().getParcelable(INITIAL_LOCATION);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
                 isLocated = true;
@@ -239,6 +240,12 @@ public class MapFragment extends StatedFragment {
             }
 
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.w("MapFragment", "onStop");
     }
 
     private ParkingArea getParkingAreaByLatLng(LatLng latlng) {
@@ -271,12 +278,6 @@ public class MapFragment extends StatedFragment {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        Log.w("MapFragment", "onStop");
-    }
-
-    @Override
     public void onLowMemory() {
         super.onLowMemory();
         mapView.onLowMemory();
@@ -294,10 +295,8 @@ public class MapFragment extends StatedFragment {
     }
 
     protected Bitmap writeTextOnDrawable(int drawableId, String text) {
-
-
         Bitmap bMap = BitmapFactory.decodeResource(getResources(), drawableId).copy(Bitmap.Config.ARGB_8888, true);
-
+        // Edit the size of the Bitmap to perfectly fit for the text
         Bitmap bm = Bitmap.createScaledBitmap(bMap, 105, 150, true);
 
         Typeface tf = Typeface.create("Helvetica", Typeface.BOLD);
@@ -336,9 +335,6 @@ public class MapFragment extends StatedFragment {
         isLocated = false;
     }
 
-    /**
-     * Save Fragment's State here
-     */
     @Override
     protected void onSaveState(Bundle outState) {
         super.onSaveState(outState);
@@ -351,9 +347,6 @@ public class MapFragment extends StatedFragment {
         }
     }
 
-    /**
-     * Restore Fragment's State here
-     */
     @Override
     protected void onRestoreState(Bundle savedInstanceState) {
         super.onRestoreState(savedInstanceState);
@@ -366,6 +359,7 @@ public class MapFragment extends StatedFragment {
         }
         markAll();
     }
+
 
     public void openAutocompleteActivity() {
         try {
@@ -389,10 +383,7 @@ public class MapFragment extends StatedFragment {
         }
     }
 
-    /**
-     * Called after the autocomplete activity has finished to return its result.
-     */
-    @Override
+   @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 

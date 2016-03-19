@@ -1,6 +1,7 @@
 package com.example.thanyapat.parkinapplication;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,7 +16,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -33,13 +36,22 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.cocosw.bottomsheet.BottomSheet;
 import com.example.thanyapat.parkinapplication.History.HistoryContent;
 import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.share.Sharer;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
@@ -50,6 +62,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseObject;
+import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,7 +80,11 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks {
 
+    public static String TAG = "MainActivity";
+    public static SharedPreferences sharedPref;
+    public static final String PARKIN_PREFERENCES = "ParkInPrefs";
     public static Map<String, Fragment> fragmentList = new HashMap<>();
+
     public static FragmentManager fragmentManager;
     private static GoogleApiClient googleApiClient;
     protected static List<ParkingArea> areaList = new LinkedList<>();
@@ -78,10 +95,8 @@ public class MainActivity extends AppCompatActivity
     public static Bitmap profile;
     private static Toolbar toolbar;
     private Menu actionBarMenu;
-
-    public static SharedPreferences sharedPref;
-    public static final String PARKIN_PREFERENCES = "ParkInPrefs" ;
-
+    private ShareDialog shareDialog;
+    private CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +115,7 @@ public class MainActivity extends AppCompatActivity
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         fragmentManager = getSupportFragmentManager();
+
         // initialize the navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -115,16 +131,58 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             // on first time display view for first nav item
             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("map")).commit();
-            Log.w("MainActivity", "First time enter the Application");
+            Log.w(TAG, "First time enter the Application");
         }
+        initStatusBar();
         getUserDetailsFromFB();
+
+        // Initialize the dialog for Facebook share
+        callbackManager = CallbackManager.Factory.create();
+        shareDialog = new ShareDialog(this);
+        shareDialog.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
+            @Override
+            public void onSuccess(Sharer.Result result) {
+                Log.w(TAG, "Share Succeed: " + result.toString());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.w(TAG, "Share Cancelled");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.w(TAG, "Share Error: " + error.getMessage());
+
+            }
+        });
+
+        // Create SharedPreferences for settings
         sharedPref = getSharedPreferences(PARKIN_PREFERENCES, Context.MODE_PRIVATE);
+
+        HistoryContent.init(this);
+    }
+
+    private void initStatusBar(){
+        findViewById(R.id.coordinatorLayout).setFitsSystemWindows(true);
+        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Log.w(TAG, "Making Tint status bar");
+            // create our manager instance after the content view is set
+            SystemBarTintManager tintManager = new SystemBarTintManager(this);
+            // enable status bar tint
+            tintManager.setStatusBarTintEnabled(true);
+            // enable navigation bar tint
+            tintManager.setNavigationBarTintEnabled(true);
+            // set the transparent color of the status bar, 20% darker
+            tintManager.setTintColor(Color.parseColor("#20000000"));
+        }
     }
 
     private void checkForAction(String action) {
         if (action.toUpperCase().equalsIgnoreCase("NAV_TO_TIMER")) {
             if (fragmentList.get("timer") != null) {
-                Log.w("MainActivity", "TimerFragment is in memory");
+                Log.w(TAG, "TimerFragment is in memory");
                 getSupportFragmentManager()
                         .beginTransaction()
                         .addToBackStack(null)
@@ -192,8 +250,6 @@ public class MainActivity extends AppCompatActivity
         // Make this unique ID to make sure there is not generated just a brand new intent with new extra values:
         int requestID = (int) System.currentTimeMillis();
 
-        // Pass the unique ID to the resultPendingIntent:
-
         // mId allows
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
@@ -219,11 +275,11 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void changeMenuIcon(int drawable){
+    public void changeMenuIcon(int drawable) {
         actionBarMenu.findItem(R.id.action_main).setIcon(getResources().getDrawable(drawable));
     }
 
-    public void setActionBarTitle(String title){
+    public void setActionBarTitle(String title) {
         TextView toolBarTitle = (TextView) findViewById(R.id.toolbar_title);
         toolBarTitle.setText(title);
     }
@@ -237,19 +293,19 @@ public class MainActivity extends AppCompatActivity
         String currentFragment = getPreferences(Context.MODE_PRIVATE).getString(SettingsFragment.CURRENT_FRAGMENT, "");
 
         //check what fragment are currently displayed and perform specific action
-        if(id == R.id.action_main && !currentFragment.equals("")){
-            switch(currentFragment){
+        if (id == R.id.action_main && !currentFragment.equals("")) {
+            switch (currentFragment) {
                 case "TimerFragment":
-                    ((TimerFragment)fragmentList.get("timer")).edit();
+                    ((TimerFragment) fragmentList.get("timer")).edit();
                     return true;
                 case "HistoryFragment":
-                    ((HistoryFragment)fragmentList.get("history")).clear();
+                    ((HistoryFragment) fragmentList.get("history")).clear();
                     return true;
                 case "IssueReportFragment":
-                    ((IssueReportFragment)fragmentList.get("issue-report")).submit();
+                    ((IssueReportFragment) fragmentList.get("issue-report")).submit();
                     return true;
                 case "InfoReportFragment":
-                    ((InfoReportFragment)fragmentList.get("info-report")).submit();
+                    ((InfoReportFragment) fragmentList.get("info-report")).submit();
                     return true;
             }
         }
@@ -259,7 +315,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        Log.e("MainActivity", "Configuration Changed");
+        Log.e(TAG, "Configuration Changed");
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -278,23 +334,25 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_timer) {
             if (userPosition != null) {
                 if (fragmentList.get("timer") == null) {
-                    Log.w("MainActivity", "Assign new location for timer");
+                    Log.w(TAG, "Assign new location for timer");
                     fragmentList.put("timer", TimerFragment.newInstance(userPosition));
                 } else if (((TimerFragment) fragmentList.get("timer")).getArea() != null) {
-                    Log.w("MainActivity", "Open timer");
+                    Log.w(TAG, "Open timer");
                 }
                 fragmentName = "timer";
             } else {
-                Log.w("MainActivity", "userPosition = null");
+                Log.w(TAG, "userPosition = null");
             }
         } else if (id == R.id.nav_memo) {
             fragmentName = "memo";
         } else if (id == R.id.nav_history) {
             fragmentName = "history";
         } else if (id == R.id.nav_report) {
+            ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
             showReportDialog();
         } else if (id == R.id.nav_share) {
-
+            ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
+            showShareDialog();
         } else if (id == R.id.nav_settings) {
             fragmentName = "settings";
         }
@@ -306,6 +364,15 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return false;
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 
 
@@ -332,6 +399,39 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    public void showShareDialog() {
+        new BottomSheet.Builder(this, R.style.BottomSheetStyleDialog)
+                .title("Share via..")
+                .grid()
+                .sheet(R.menu.social_list)
+                .listener(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case R.id.facebook:
+                                if (ShareDialog.canShow(ShareLinkContent.class)) {
+                                    // TODO: modify content to be shared
+                                    ShareLinkContent linkContent = new ShareLinkContent.Builder()
+                                            .setContentTitle("Hello Facebook")
+                                            .setContentDescription(
+                                                    "The 'Hello Facebook' sample  showcases simple Facebook integration")
+                                            .setContentUrl(Uri.parse("http://developers.facebook.com/android"))
+                                            .build();
+                                    shareDialog.show(linkContent);
+                                }
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+
     public void setUserPosition(LatLng userPos) {
         userPosition = userPos;
     }
@@ -347,7 +447,7 @@ public class MainActivity extends AppCompatActivity
                 checkForAction(action);
             }
         } catch (Exception e) {
-            Log.e("MainActivity", "Problem consuming action from intent", e);
+            Log.e(TAG, "Problem consuming action from intent", e);
         }
         if (this.getIntent().getStringExtra("Notification") != null) {
             Log.w("onResume", this.getIntent().getStringExtra("Notification"));
@@ -373,7 +473,7 @@ public class MainActivity extends AppCompatActivity
         super.onStop();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction( Action.TYPE_VIEW,"Main Page", Uri.parse("http://host/path"), Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path")
+        Action viewAction = Action.newAction(Action.TYPE_VIEW, "Main Page", Uri.parse("http://host/path"), Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path")
         );
         AppIndex.AppIndexApi.end(googleApiClient, viewAction);
         if (googleApiClient != null && googleApiClient.isConnected()) {
@@ -423,7 +523,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
             // some error massage
-            Log.e("MainActivity", "Connection failed " + connectionResult.getErrorMessage());
+            Log.e(TAG, "Connection failed " + connectionResult.getErrorMessage());
         }
     }
 
@@ -456,9 +556,9 @@ public class MainActivity extends AppCompatActivity
                             JSONObject picture = response.getJSONObject().getJSONObject("picture");
                             JSONObject data = picture.getJSONObject("data");
 
-                            if(data.getBoolean("is_silhouette")){
+                            if (data.getBoolean("is_silhouette")) {
                                 profile = BitmapFactory.decodeResource(getResources(), R.drawable.blank_profile_pic);
-                            }else{
+                            } else {
                                 String pictureUrl = "https://graph.facebook.com/" + response.getJSONObject().getString("id") + "/picture?type=large";
 
                                 Log.w("Profile pic", "url: " + pictureUrl);

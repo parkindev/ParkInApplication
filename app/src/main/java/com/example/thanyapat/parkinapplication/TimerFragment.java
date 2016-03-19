@@ -140,7 +140,7 @@ public class TimerFragment extends StatedFragment {
 
     public void onResume() {
         super.onResume();
-        if (isCounting) { //
+        if (isCounting) {
             startBtn.setBackgroundColor(COLOR_RED);
             startBtn.setText("STOP");
             location_label.setText("Duration");
