@@ -1,33 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="@dimen/inter_card_half_spacing"
     android:layout_marginBottom="@dimen/inter_card_half_spacing"
     android:layout_marginLeft="@dimen/inter_card_half_spacing"
-    android:layout_marginRight="@dimen/inter_card_half_spacing">
+    android:layout_marginRight="@dimen/inter_card_half_spacing"
+    android:layout_marginTop="@dimen/inter_card_half_spacing">
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <TextView
-        android:id="@+id/date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:textAppearance="?attr/textAppearanceListItem" />
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:textAppearance="?attr/textAppearanceListItem" />
 
         <me.grantland.widget.AutofitTextView
-        android:id="@+id/place"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:textAppearance="?attr/textAppearanceListItem" />
-        <!--<ImageButton
-            android:id="@+id/navigateButton"
+            android:id="@+id/place"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>-->
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:textAppearance="?attr/textAppearanceListItem" />
     </LinearLayout>
 </android.support.v7.widget.CardView>
+
+
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:layout_marginBottom="@dimen/inter_card_half_spacing"-->
+<!--android:layout_marginLeft="@dimen/inter_card_half_spacing"-->
+<!--android:layout_marginRight="@dimen/inter_card_half_spacing"-->
+<!--android:layout_marginTop="@dimen/inter_card_half_spacing"-->
+<!--android:orientation="horizontal">-->
+
+<!--<FrameLayout-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_weight="0.15"-->
+    <!--android:layout_marginRight="10dp">-->
+
+    <!--<ImageView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:id="@+id/ring"-->
+        <!--android:src="@drawable/item_header"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:layout_margin="10dp" />-->
+<!--</FrameLayout>-->
+
+<!--<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_weight="0.85">-->
+
+    <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:orientation="horizontal">-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/date"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="@dimen/text_margin"-->
+            <!--android:textAppearance="?attr/textAppearanceListItem" />-->
+
+        <!--<me.grantland.widget.AutofitTextView-->
+            <!--android:id="@+id/place"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_margin="@dimen/text_margin"-->
+            <!--android:textAppearance="?attr/textAppearanceListItem" />-->
+        <!--&lt;!&ndash;<ImageButton-->
+            <!--android:id="@+id/navigateButton"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"/>&ndash;&gt;-->
+    <!--</LinearLayout>-->
+<!--</android.support.v7.widget.CardView>-->
+
+
+<!--</LinearLayout>-->

@@ -14,6 +14,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.facebook.GraphResponse;
+import com.google.android.gms.appdatasearch.GetRecentContextCall;
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.parse.ParseUser;
@@ -25,7 +26,7 @@ public class SettingsFragment extends StatedFragment {
     public static String CURRENT_FRAGMENT = "current-fragment";
     private static final String TAG = "SettingsFragment";
 
-    public static GraphResponse response;
+    public GraphResponse response;
     private View rootView;
     private static TextView mEmail;
     private static TextView mName;
@@ -101,8 +102,11 @@ public class SettingsFragment extends StatedFragment {
         return rootView;
     }
 
-    protected void onFirstTimeLaunched() {
+    public void setResponse(GraphResponse response){
+        this.response = response;
     }
 
-
+    public GraphResponse getResponse(){
+        return this.response;
+    }
 }

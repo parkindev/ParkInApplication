@@ -159,7 +159,6 @@ public class MapFragment extends StatedFragment {
                             , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
                 }
                 selectedMarker = marker;
-                selectedMarker.showInfoWindow();
                 selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker_clicked
                         , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
                 Log.e("marker press", hashMarker.get(marker.getId()).getName() + " is pressed");
@@ -357,7 +356,6 @@ public class MapFragment extends StatedFragment {
             map.moveCamera(CameraUpdateFactory.newCameraPosition((CameraPosition) savedInstanceState.getParcelable("camera")));
             seekbarmanager.updateSeekBar(savedInstanceState.getInt("seekBarValue"));
         }
-        markAll();
     }
 
 

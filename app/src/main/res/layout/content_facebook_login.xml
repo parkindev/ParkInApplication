@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     tools:context="FacebookLoginActivity"
     tools:showIn="@layout/activity_facebook_login"
+    android:fitsSystemWindows="true"
     android:background="@drawable/signin_background">
 
     <TextView
@@ -20,7 +21,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-
 
     <ImageButton
         android:layout_width="fill_parent"
@@ -49,8 +49,5 @@
         android:id="@+id/frame_container">
 
     </FrameLayout>
-
-
-
 
 </RelativeLayout>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
@@ -19,8 +20,9 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
+            android:background="?attr/colorPrimary"
+            android:theme="@style/AppTheme.AppBarOverlay"
+            android:elevation="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -29,8 +31,7 @@
                 android:layout_gravity="center"
                 android:id="@+id/toolbar_title"
                 android:textColor="#000000"
-                android:textSize="25dp"
-                android:textIsSelectable="true" />
+                android:textSize="25dp" />
 
         </android.support.v7.widget.Toolbar>
 

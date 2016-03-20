@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,11 +56,6 @@ public class MemoFragment extends StatedFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_memo, container, false);
-        MainActivity.navigationView.getMenu().getItem(2).setChecked(true);
-        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
-        ((MainActivity)getActivity()).setActionBarTitle("MEMO");
-        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
-        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.blank_icon);
 
         imageView = (ImageView)rootView.findViewById(R.id.imageView);
         editText = (EditText)rootView.findViewById(R.id.editText);
@@ -76,6 +72,15 @@ public class MemoFragment extends StatedFragment {
             }
         });
         return rootView;
+    }
+
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        MainActivity.navigationView.getMenu().getItem(2).setChecked(true);
+        getActivity().findViewById(R.id.toolbar).setVisibility(View.VISIBLE);
+        ((MainActivity)getActivity()).setActionBarTitle("MEMO");
+        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(SettingsFragment.CURRENT_FRAGMENT, TAG).commit();
+        ((MainActivity)getActivity()).changeMenuIcon(R.drawable.blank_icon);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

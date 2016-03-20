@@ -133,8 +133,10 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("map")).commit();
             Log.w(TAG, "First time enter the Application");
         }
-        initStatusBar();
-        getUserDetailsFromFB();
+        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+        if(((SettingsFragment)fragmentList.get("settings")).getResponse()==null){
+            getUserDetailsFromFB();
+        }
 
         // Initialize the dialog for Facebook share
         callbackManager = CallbackManager.Factory.create();
@@ -160,23 +162,8 @@ public class MainActivity extends AppCompatActivity
         // Create SharedPreferences for settings
         sharedPref = getSharedPreferences(PARKIN_PREFERENCES, Context.MODE_PRIVATE);
 
+        // Find the history cached in the Device
         HistoryContent.init(this);
-    }
-
-    private void initStatusBar(){
-        findViewById(R.id.coordinatorLayout).setFitsSystemWindows(true);
-        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Log.w(TAG, "Making Tint status bar");
-            // create our manager instance after the content view is set
-            SystemBarTintManager tintManager = new SystemBarTintManager(this);
-            // enable status bar tint
-            tintManager.setStatusBarTintEnabled(true);
-            // enable navigation bar tint
-            tintManager.setNavigationBarTintEnabled(true);
-            // set the transparent color of the status bar, 20% darker
-            tintManager.setTintColor(Color.parseColor("#20000000"));
-        }
     }
 
     private void checkForAction(String action) {
@@ -440,7 +427,6 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         Log.e("Status", "App resumed");
         super.onResume();
-        HistoryContent.init(this);
         try {
             String action = getIntent().getAction();
             if (action != null) {
@@ -460,10 +446,9 @@ public class MainActivity extends AppCompatActivity
         Log.e("Status", "App started");
         super.onStart();
         googleApiClient.connect();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(Action.TYPE_VIEW, "Main Page", Uri.parse("http://host/path"), Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path")
-        );
+        Action viewAction = Action.newAction(Action.TYPE_VIEW
+                , "Main Page", Uri.parse("http://host/path")
+                , Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path"));
         AppIndex.AppIndexApi.start(googleApiClient, viewAction);
     }
 
@@ -471,10 +456,10 @@ public class MainActivity extends AppCompatActivity
     protected void onStop() {
         Log.e("Status", "App stopped");
         super.onStop();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(Action.TYPE_VIEW, "Main Page", Uri.parse("http://host/path"), Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path")
-        );
+        Action viewAction = Action.newAction(Action.TYPE_VIEW
+                , "Main Page"
+                , Uri.parse("http://host/path")
+                , Uri.parse("android-app://com.example.thanyapat.parkinapplication/http/host/path"));
         AppIndex.AppIndexApi.end(googleApiClient, viewAction);
         if (googleApiClient != null && googleApiClient.isConnected()) {
             // Disconnect Google API Client if available and connected
@@ -542,7 +527,7 @@ public class MainActivity extends AppCompatActivity
                     public void onCompleted(GraphResponse response) {
                         try {
 
-                            SettingsFragment.response = response;
+                            ((SettingsFragment)fragmentList.get("settings")).setResponse(response);
                             Log.w("Response", response.getRawResponse());
 
                             email = response.getJSONObject().getString("email");
