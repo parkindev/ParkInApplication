@@ -36,6 +36,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -80,7 +81,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks {
 
-    public static String TAG = "MainActivity";
+    public static final String TAG = "MainActivity";
     public static SharedPreferences sharedPref;
     public static final String PARKIN_PREFERENCES = "ParkInPrefs";
     public static Map<String, Fragment> fragmentList = new HashMap<>();
@@ -128,11 +129,13 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
         if (savedInstanceState == null) {
             // on first time display view for first nav item
             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.frame_container, fragmentList.get("map")).commit();
             Log.w(TAG, "First time enter the Application");
         }
+
         toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
         if(((SettingsFragment)fragmentList.get("settings")).getResponse()==null){
             getUserDetailsFromFB();
@@ -165,6 +168,7 @@ public class MainActivity extends AppCompatActivity
         // Find the history cached in the Device
         HistoryContent.init(this);
     }
+
 
     private void checkForAction(String action) {
         if (action.toUpperCase().equalsIgnoreCase("NAV_TO_TIMER")) {
@@ -262,6 +266,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+
     public void changeMenuIcon(int drawable) {
         actionBarMenu.findItem(R.id.action_main).setIcon(getResources().getDrawable(drawable));
     }
@@ -305,7 +310,6 @@ public class MainActivity extends AppCompatActivity
         Log.e(TAG, "Configuration Changed");
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -352,6 +356,7 @@ public class MainActivity extends AppCompatActivity
         }
         return false;
     }
+
 
     public int getStatusBarHeight() {
         int result = 0;
@@ -503,6 +508,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
     private class MyConnectionFailedListener implements GoogleApiClient.OnConnectionFailedListener {
 
         @Override
@@ -511,6 +517,7 @@ public class MainActivity extends AppCompatActivity
             Log.e(TAG, "Connection failed " + connectionResult.getErrorMessage());
         }
     }
+
 
     private void getUserDetailsFromFB() {
 
@@ -561,6 +568,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
     public static Bitmap DownloadImageBitmap(String url) {
         Bitmap bm = null;
         try {
@@ -577,6 +585,7 @@ public class MainActivity extends AppCompatActivity
         }
         return bm;
     }
+
 
     class ProfilePhotoAsync extends AsyncTask<String, String, String> {
         String url;

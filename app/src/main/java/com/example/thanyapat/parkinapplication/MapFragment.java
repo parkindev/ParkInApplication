@@ -120,6 +120,7 @@ public class MapFragment extends StatedFragment {
         return rootView;
     }
 
+
     public void initComponents() {
         map = mapView.getMap();
         map.getUiSettings().setMyLocationButtonEnabled(false);
@@ -204,6 +205,7 @@ public class MapFragment extends StatedFragment {
         searchMarker.showInfoWindow();
     }
 
+
     public LocationListener getLocationListener() {
         if (listener != null) return listener;
         else return null;
@@ -247,6 +249,7 @@ public class MapFragment extends StatedFragment {
         Log.w("MapFragment", "onStop");
     }
 
+
     private ParkingArea getParkingAreaByLatLng(LatLng latlng) {
         Iterator it = hashMarker.entrySet().iterator();
         while (it.hasNext()) {
@@ -282,6 +285,7 @@ public class MapFragment extends StatedFragment {
         mapView.onLowMemory();
     }
 
+
     protected void markAll() {
         for (ParkingArea object : ((MainActivity) getActivity()).getAreaList()) {
             Marker temp = map.addMarker(new MarkerOptions()
@@ -292,6 +296,7 @@ public class MapFragment extends StatedFragment {
         }
         Log.w("MapFragment", "Finish Adding Markers");
     }
+
 
     protected Bitmap writeTextOnDrawable(int drawableId, String text) {
         Bitmap bMap = BitmapFactory.decodeResource(getResources(), drawableId).copy(Bitmap.Config.ARGB_8888, true);
@@ -324,11 +329,13 @@ public class MapFragment extends StatedFragment {
         return bm;
     }
 
+
     public static int convertToPixels(Context context, int nDP) {
         final float conversionScale = context.getResources().getDisplayMetrics().density;
         return (int) ((nDP * conversionScale) + 0.5f);
 
     }
+
 
     protected void onFirstTimeLaunched() {
         isLocated = false;

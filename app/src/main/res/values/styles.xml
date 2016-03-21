@@ -2,9 +2,10 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item> <!-- Text Color -->
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item> <!-- Statusbar Color-->
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item> <!-- Status bar Color-->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="drawerArrowStyle">@style/ParkInDrawerArrowToggle</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat">

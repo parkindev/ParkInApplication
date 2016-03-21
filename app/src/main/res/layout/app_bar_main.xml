@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
@@ -12,8 +10,11 @@
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay"
+        android:clickable="false"
+        android:contextClickable="false"
         android:fitsSystemWindows="true"
+        android:measureWithLargestChild="true"
+        android:theme="@style/AppTheme.AppBarOverlay"
         android:visibility="visible">
 
         <android.support.v7.widget.Toolbar
@@ -21,15 +22,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            android:theme="@style/AppTheme.AppBarOverlay"
-            android:elevation="4dp">
-
+            android:minHeight="?attr/actionBarSize"
+            android:theme="@style/AppTheme.AppBarOverlay">
             <TextView
+                android:id="@+id/toolbar_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PARKIN"
                 android:layout_gravity="center"
-                android:id="@+id/toolbar_title"
+                android:text="PARKIN"
                 android:textColor="#000000"
                 android:textSize="25dp" />
 
