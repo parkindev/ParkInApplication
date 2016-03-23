@@ -196,7 +196,6 @@ public class MainActivity extends AppCompatActivity
         fragmentList.put("issue-report", new IssueReportFragment());
         fragmentList.put("info-report", new InfoReportFragment());
         fragmentList.put("settings", new SettingsFragment());
-        //fragmentList.put("home", new HomeFragment());
     }
 
 
