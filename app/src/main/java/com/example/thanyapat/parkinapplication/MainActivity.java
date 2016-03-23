@@ -35,10 +35,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.cocosw.bottomsheet.BottomSheet;
@@ -94,10 +97,11 @@ public class MainActivity extends AppCompatActivity
     public static String name;
     public static String email;
     public static Bitmap profile;
-    private static Toolbar toolbar;
+    private Toolbar toolbar;
     private Menu actionBarMenu;
     private ShareDialog shareDialog;
     private CallbackManager callbackManager;
+    public GraphResponse response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -507,6 +511,28 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+
+        View v = getCurrentFocus();
+        boolean ret = super.dispatchTouchEvent(event);
+
+        if (v instanceof EditText) {
+            View w = getCurrentFocus();
+            int scrcoords[] = new int[2];
+            w.getLocationOnScreen(scrcoords);
+            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+            float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+            Log.d("Activity", "Touch event "+event.getRawX()+","+event.getRawY()+" "+x+","+y+" rect "+w.getLeft()+","+w.getTop()+","+w.getRight()+","+w.getBottom()+" coords "+scrcoords[0]+","+scrcoords[1]);
+            if (event.getAction() == MotionEvent.ACTION_UP && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w.getBottom()) ) {
+
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+            }
+        }
+        return ret;
+    }
 
     private class MyConnectionFailedListener implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -532,7 +558,7 @@ public class MainActivity extends AppCompatActivity
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
                         try {
-
+                            MainActivity.this.response = response;
                             ((SettingsFragment)fragmentList.get("settings")).setResponse(response);
                             Log.w("Response", response.getRawResponse());
 

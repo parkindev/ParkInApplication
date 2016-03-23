@@ -117,6 +117,6 @@ public class ParkingArea implements Parcelable, Serializable {
 
     public String getPicURL(){ return picUrl; }
 
-    public int getFreeTimeInMinute(){ return freeTimeInMinute; }
+    public int getFreeHour(){ return freeTimeInMinute; }
 
 }

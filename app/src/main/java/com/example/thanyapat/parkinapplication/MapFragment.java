@@ -38,8 +38,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.inthecheesefactory.thecheeselibrary.fragment.support.v4.app.StatedFragment;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -49,7 +51,8 @@ public class MapFragment extends StatedFragment {
     private static GoogleMap map;
 
     private static LatLng userPosition;
-    protected static HashMap<String, ParkingArea> hashMarker = new HashMap<>();
+    protected static HashMap<String, ParkingArea> hashArea = new HashMap<>();
+    protected static List<Marker> listMarker = new ArrayList<>();
 
     private static View rootView;
     private static LocationListener listener;
@@ -143,7 +146,7 @@ public class MapFragment extends StatedFragment {
                 Log.e("CLICK", ("Click on map"));
                 if (selectedMarker != null) {
                     selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker
-                            , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
+                            , hashArea.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashArea.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
                     selectedMarker = null;
                 }
                 slidePanel.hide();
@@ -157,13 +160,13 @@ public class MapFragment extends StatedFragment {
                 }
                 if (selectedMarker != null) {
                     selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker
-                            , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
+                            , hashArea.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashArea.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
                 }
                 selectedMarker = marker;
                 selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker_clicked
-                        , hashMarker.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashMarker.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
-                Log.e("marker press", hashMarker.get(marker.getId()).getName() + " is pressed");
-                slidePanel.show(hashMarker.get(marker.getId()));
+                        , hashArea.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashArea.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
+                Log.e("marker press", hashArea.get(marker.getId()).getName() + " is pressed");
+                slidePanel.show(hashArea.get(marker.getId()));
                 return true;
 
             }
@@ -233,6 +236,16 @@ public class MapFragment extends StatedFragment {
                 // TODO: Change the marker's color
                 LatLng latLng = getArguments().getParcelable(INITIAL_LOCATION);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                for(Marker marker : listMarker){
+                    if(marker.getPosition().equals(latLng)){
+                        Log.w("MapFragment", "Marker Found");
+                        selectedMarker = marker;
+                        selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker_clicked
+                                , hashArea.get(selectedMarker.getId()).getPrice() != null ? "" + ApplicationUtils.durationToPrice(hashArea.get(selectedMarker.getId()), seekbarmanager.getValue()) : "")));
+
+                        break;
+                    }
+                }
                 isLocated = true;
                 slidePanel.show(getParkingAreaByLatLng(latLng));
                 getArguments().clear();
@@ -251,7 +264,7 @@ public class MapFragment extends StatedFragment {
 
 
     private ParkingArea getParkingAreaByLatLng(LatLng latlng) {
-        Iterator it = hashMarker.entrySet().iterator();
+        Iterator it = hashArea.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             LatLng tem = new LatLng(((ParkingArea) pair.getValue()).getLat(), ((ParkingArea) pair.getValue()).getLong());
@@ -292,7 +305,8 @@ public class MapFragment extends StatedFragment {
                     .position(new LatLng(object.getLat(), object.getLong()))
                     .icon(BitmapDescriptorFactory.fromBitmap(writeTextOnDrawable(R.drawable.marker
                             , object.getPrice() != null ? "" + ApplicationUtils.durationToPrice(object, seekbarmanager.getValue()) : ""))));
-            hashMarker.put(temp.getId(), object);
+            hashArea.put(temp.getId(), object);
+            listMarker.add(temp);
         }
         Log.w("MapFragment", "Finish Adding Markers");
     }
@@ -387,6 +401,8 @@ public class MapFragment extends StatedFragment {
             Log.e("AutoComplete", message);
         }
     }
+
+    public View getRootView(){return rootView;}
 
    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
